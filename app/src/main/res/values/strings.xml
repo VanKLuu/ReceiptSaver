@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Receipt Saver</string>
+    <string name="title_receipt_saver">Receipt Saver</string>
+    <string name="subtitle_say_goodbye">Say goodbye</string>
+    <string name="wave_hand">👋</string>
+    <string name="to_paper_receipts">to paper receipts</string>
+
+    <string name="search">Search</string>
+    <string name="list_of_receipt">List Of Receipt</string>
+    <string name="upload">Upload</string>
+    <!-- Strings for BottomNavigationView -->
+    <string name="title_home">Home</string>
+    <string name="title_scan">Scan</string>
+    <string name="title_expenses">Expenses</string>
+    <string name="title_account">Account</string>
+    <string name="receipt_photo">receiptPhoto</string>
+    <string name="store_name">Store name</string>
+    <string name="total_amount">Total amount</string>
+    <string name="receipt_date">Receipt date</string>
+    <string name="search_receipts_by_name">Enter name of the store</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- Other string resources -->
+</resources>

@@ -57,16 +57,40 @@
         android:textColor="@color/colorPrimary"
         android:layout_centerHorizontal="true"/>
 
+    <!-- About Content -->
+    <TextView
+        android:id="@+id/content_about"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_about"
+        android:layout_marginTop="16dp"
+        android:text="This Receipt Saver app..."
+        android:textSize="16sp"
+        android:textColor="@color/black"
+        android:layout_centerHorizontal="true"/>
+
     <!-- Feedback Text -->
     <TextView
         android:id="@+id/text_feedback"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Feedback"
-        android:layout_below="@id/text_about"
-        android:layout_marginTop="16dp"
+        android:layout_below="@id/content_about"
+        android:layout_marginTop="32dp"
         android:textSize="20sp"
         android:textColor="@color/colorPrimary"
+        android:layout_centerHorizontal="true"/>
+
+    <!-- Feedback Content -->
+    <TextView
+        android:id="@+id/content_feedback"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_feedback"
+        android:layout_marginTop="16dp"
+        android:text="For feedback please contact..."
+        android:textSize="16sp"
+        android:textColor="@color/black"
         android:layout_centerHorizontal="true"/>
 
     <!-- Privacy Policy Text -->
@@ -75,10 +99,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Privacy Policy"
-        android:layout_below="@id/text_feedback"
-        android:layout_marginTop="16dp"
+        android:layout_below="@id/content_feedback"
+        android:layout_marginTop="32dp"
         android:textSize="20sp"
         android:textColor="@color/colorPrimary"
+        android:layout_centerHorizontal="true"/>
+
+    <!-- Privacy Policy Content -->
+    <TextView
+        android:id="@+id/content_privacy_policy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_privacy_policy"
+        android:layout_marginTop="16dp"
+        android:text="Your privacy policy..."
+        android:textSize="16sp"
+        android:textColor="@color/black"
         android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>

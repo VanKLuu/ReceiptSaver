@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, DashboardFragment())
             .commit()
+        bottomNavigationView.menu.findItem(R.id.navigation_home).isChecked = true
     }
 
     private fun navigateToScan() {
@@ -90,6 +91,7 @@ class MainActivity : AppCompatActivity() {
                 image = imageByteArray  // Set the photo data
             )
             saveReceipt(receipts)
+            navigateToDashboard()
         }
     }
 

@@ -2,13 +2,18 @@ package com.example.receiptsaver
 
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
+import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.util.Log
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.widget.SearchView
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.receiptsaver.db.MyDatabaseRepository
@@ -16,10 +21,11 @@ import com.example.receiptsaver.db.Receipts
 import java.io.InputStream
 import java.util.UUID
 import java.util.concurrent.Executors
-import android.widget.Button
+
 
 private const val LOG_TAG = "DashboardFragment"
 private const val REQUEST_PDF_SELECTION = 2
+
 
 class DashboardFragment : Fragment() {
 
@@ -32,8 +38,7 @@ class DashboardFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(LOG_TAG, "onCreate called from DashboardFragment")
-        dbRepo = MyDatabaseRepository(requireContext())
-        adapter = ReceiptAdapter(emptyList())
+
     }
 
     override fun onCreateView(
@@ -41,43 +46,49 @@ class DashboardFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
         Log.e(LOG_TAG, "onCreateView called from DashboardFragment")
         val view = inflater.inflate(R.layout.fragment_dashboard, container, false)
-        initializeViews(view)
+        dbRepo = MyDatabaseRepository(requireContext())
+        this.uploadButton = view.findViewById(R.id.buttonUpload)
+        this.searchView = view.findViewById(R.id.searchView)
+        this.receiptRecyclerView = view.findViewById(R.id.recyclerViewReceipts) as RecyclerView
+        this.adapter = ReceiptAdapter(emptyList()) // Initialize adapter with an empty list
+        this.receiptRecyclerView.adapter = adapter // Set the adapter before initializing the RecyclerView
+        this.receiptRecyclerView.layoutManager = GridLayoutManager(context, 2)
+        this.updateUI()
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        uploadButton.setOnClickListener {
-            openPdfPicker()
-        }
+        searchView.isIconified = true
+
+        // Set up query text listener to handle search functionality
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
+                if (!query.isNullOrBlank()) {
+                    val fragmentTransaction = parentFragmentManager.beginTransaction()
+                    fragmentTransaction.replace(R.id.fragment_container, SearchFragment())
+                    fragmentTransaction.commit()
+                    return true
+                }
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                return false
+                return true
             }
         })
-        updateUI()
+        uploadButton.setOnClickListener {
+            openPdfPicker()
+        }
     }
-
-    private fun initializeViews(view: View) {
-        uploadButton = view.findViewById(R.id.buttonUpload)
-        searchView = view.findViewById(R.id.searchView)
-        receiptRecyclerView = view.findViewById(R.id.recyclerViewReceipts)
-        receiptRecyclerView.adapter = adapter
-        receiptRecyclerView.layoutManager = GridLayoutManager(context, 2)
-    }
-
     private fun openPdfPicker() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "application/pdf"
         startActivityForResult(intent, REQUEST_PDF_SELECTION)
     }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_PDF_SELECTION && resultCode == Activity.RESULT_OK) {
@@ -93,7 +104,6 @@ class DashboardFragment : Fragment() {
             }
         }
     }
-
     private fun savePdfToDatabase(pdfByteArray: ByteArray) {
         Executors.newSingleThreadExecutor().execute {
             val receipt = Receipts(
@@ -107,34 +117,58 @@ class DashboardFragment : Fragment() {
         }
     }
 
+    private inner class ReceiptHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    {
+
+        private val receiptPhoto: ImageView = itemView.findViewById(R.id.receiptPhoto)
+        private val storeName: TextView = itemView.findViewById(R.id.storeName)
+        private val totalAmount: TextView = itemView.findViewById(R.id.totalAmount)
+
+        fun bind(receipts: Receipts) {
+            storeName.text = receipts.name
+            totalAmount.text = receipts.totalAmount.toString()
+            val imageData = receipts.image
+            if (imageData != null) {
+                val bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.size)
+
+                receiptPhoto.setImageBitmap(bitmap)
+            } else {
+                receiptPhoto.setImageResource(R.drawable.receipt_image)
+            }
+
+            itemView.setOnClickListener {
+                val intent = Intent(context, ReceiptDetailFragment::class.java)
+                intent.putExtra("id", receipts.id)
+                intent.putExtra("name", receipts.name)
+                intent.putExtra("img", receipts.image)
+                startActivity(intent)
+            }
+        }
+    }
+    private inner class ReceiptAdapter (var receiptList: List<Receipts>)
+        : RecyclerView.Adapter<ReceiptHolder>()
+    {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReceiptHolder
+        {
+            Log.d(LOG_TAG, "onCreateViewHolder called")
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.receipt_item, parent, false)
+            return ReceiptHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: ReceiptHolder, position: Int) {
+            Log.d(LOG_TAG, "onBindViewHolder called")
+            val receiptData = receiptList[position]
+            Log.d(LOG_TAG, "receiptData: $receiptData")
+            holder.bind(receiptData)
+        }
+
+        override fun getItemCount() = receiptList.size
+    }
     private fun updateUI() {
         dbRepo.fetchAllReceipts().observe(viewLifecycleOwner) { receiptList ->
             Log.e(LOG_TAG, "albumList observe called with receiptList=$receiptList")
             adapter = receiptList?.let { ReceiptAdapter(it) }
             this.receiptRecyclerView.adapter = adapter
-        }
-    }
-
-    private inner class ReceiptAdapter(private var receiptList: List<Receipts>) :
-        RecyclerView.Adapter<ReceiptAdapter.ReceiptHolder>() {
-
-        inner class ReceiptHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            // Initialize views
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReceiptHolder {
-            return ReceiptHolder(LayoutInflater.from(parent.context).inflate(R.layout.receipt_item, parent, false))
-        }
-
-        override fun onBindViewHolder(holder: ReceiptHolder, position: Int) {
-            // Bind data to ViewHolder
-        }
-
-        override fun getItemCount() = receiptList.size
-
-        fun updateReceipts(newReceiptList: List<Receipts>) {
-            receiptList = newReceiptList
-            notifyDataSetChanged()
         }
     }
 

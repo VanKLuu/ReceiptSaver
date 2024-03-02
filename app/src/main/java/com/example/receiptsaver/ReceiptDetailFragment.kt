@@ -65,16 +65,14 @@ class ReceiptDetailFragment : Fragment() {
         receiptDate.text = receipt.date
         totalAmount.text = receipt.totalAmount.toString()
 
-        // Load image if available
-        receipt.image?.let { imageData ->
-            if (imageData.isNotEmpty()) {
-                receiptPhoto.setImageBitmap(BitmapFactory.decodeByteArray(imageData, 0, imageData.size))
-            }
-            else {
-                receiptPhoto.setImageResource(R.drawable.receipt_image)
-            }
-        }
+        val imageData = receipt.image
+        if (imageData != null) {
+            val bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.size)
 
+            receiptPhoto.setImageBitmap(bitmap)
+        } else {
+            receiptPhoto.setImageResource(R.drawable.receipt_image)
+        }
 
         return view
     }

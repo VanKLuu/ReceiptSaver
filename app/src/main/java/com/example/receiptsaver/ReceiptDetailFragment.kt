@@ -1,32 +1,32 @@
 package com.example.receiptsaver
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.util.Log
+import android.widget.ImageView
+import android.widget.TextView
+import com.example.receiptsaver.db.MyDatabaseRepository
+import com.example.receiptsaver.db.Receipts
+import java.util.UUID
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [ReceiptDetailFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
+private const val TAG = "ReceiptDetailFragment"
 class ReceiptDetailFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+
+    private lateinit var receiptPhoto: ImageView
+    private lateinit var storeName: TextView
+    private lateinit var totalAmount: TextView
+    private lateinit var receiptDate: TextView
+    private lateinit var receipt: Receipts
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+        Log.d(TAG, "onCreate called")
     }
 
     override fun onCreateView(
@@ -34,26 +34,57 @@ class ReceiptDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_receipt_detail, container, false)
-    }
+        val view = inflater.inflate(R.layout.fragment_receipt_detail, container, false)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ReceiptDetailFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ReceiptDetailFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+        // Initialize views
+        receiptPhoto = view.findViewById(R.id.receiptPhoto)
+        storeName = view.findViewById(R.id.storeName)
+        totalAmount = view.findViewById(R.id.totalAmount)
+        receiptDate = view.findViewById(R.id.receiptDate)
+
+        // Retrieve data from arguments
+        arguments?.let { args ->
+            val receiptId = args.getString("id")
+            val receiptName = args.getString("name")
+            val receiptTotal = args.getDouble("total", 0.0) // Default value is 0.0
+            val receiptDate = args.getString("date")
+            val receiptImage = args.getByteArray("img")
+
+            // Create Receipts object
+            receipt = Receipts(
+                UUID.fromString(receiptId),
+                receiptName ?: "",
+                receiptDate ?: "",
+                receiptTotal,
+                receiptImage
+            )
+        }
+
+        // Bind data to views
+        storeName.text = receipt.name
+        receiptDate.text = receipt.date
+        totalAmount.text = receipt.totalAmount.toString()
+
+        // Load image if available
+        receipt.image?.let { imageData ->
+            if (imageData.isNotEmpty()) {
+                receiptPhoto.setImageBitmap(BitmapFactory.decodeByteArray(imageData, 0, imageData.size))
             }
+        }
+
+        return view
+    }
+    companion object {
+        fun newInstance(id: String, name: String, image: ByteArray?, totalAmount: Double, date: String): ReceiptDetailFragment {
+            val fragment = ReceiptDetailFragment()
+            val args = Bundle()
+            args.putString("id", id)
+            args.putString("name", name)
+            args.putByteArray("img", image)
+            args.putDouble("total", totalAmount)
+            args.putString("date", date)
+            fragment.arguments = args
+            return fragment
+        }
     }
 }

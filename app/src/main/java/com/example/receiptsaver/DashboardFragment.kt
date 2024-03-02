@@ -54,7 +54,8 @@ class DashboardFragment : Fragment() {
         this.searchView = view.findViewById(R.id.searchView)
         this.receiptRecyclerView = view.findViewById(R.id.recyclerViewReceipts) as RecyclerView
         this.adapter = ReceiptAdapter(emptyList()) // Initialize adapter with an empty list
-        this.receiptRecyclerView.adapter = adapter // Set the adapter before initializing the RecyclerView
+        this.receiptRecyclerView.adapter =
+            adapter // Set the adapter before initializing the RecyclerView
         this.receiptRecyclerView.layoutManager = GridLayoutManager(context, 2)
         this.updateUI()
         return view
@@ -84,17 +85,20 @@ class DashboardFragment : Fragment() {
             openPdfPicker()
         }
     }
+
     private fun openPdfPicker() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "application/pdf"
         startActivityForResult(intent, REQUEST_PDF_SELECTION)
     }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_PDF_SELECTION && resultCode == Activity.RESULT_OK) {
             data?.data?.let { uri ->
                 try {
-                    val inputStream: InputStream? = requireContext().contentResolver.openInputStream(uri)
+                    val inputStream: InputStream? =
+                        requireContext().contentResolver.openInputStream(uri)
                     val pdfByteArray = inputStream?.readBytes()
                     inputStream?.close()
                     pdfByteArray?.let { savePdfToDatabase(it) }
@@ -104,6 +108,7 @@ class DashboardFragment : Fragment() {
             }
         }
     }
+
     private fun savePdfToDatabase(pdfByteArray: ByteArray) {
         Executors.newSingleThreadExecutor().execute {
             val receipt = Receipts(
@@ -117,8 +122,7 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    private inner class ReceiptHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
-    {
+    private inner class ReceiptHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         private val receiptPhoto: ImageView = itemView.findViewById(R.id.receiptPhoto)
         private val storeName: TextView = itemView.findViewById(R.id.storeName)
@@ -137,21 +141,32 @@ class DashboardFragment : Fragment() {
             }
 
             itemView.setOnClickListener {
-                val intent = Intent(context, ReceiptDetailFragment::class.java)
-                intent.putExtra("id", receipts.id)
-                intent.putExtra("name", receipts.name)
-                intent.putExtra("img", receipts.image)
-                startActivity(intent)
+                try {
+                    val fragment = ReceiptDetailFragment.newInstance(
+                        receipts.id.toString(),
+                        receipts.name,
+                        receipts.image,
+                        receipts.totalAmount,
+                        receipts.date
+                    )
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .addToBackStack(null) // Optional: Adds the transaction to the back stack
+                        .commit()
+                } catch (e: Exception) {
+                    Log.e("ReceiptAdapter", "Error navigating to detail fragment", e)
+                    // Handle the error, such as showing a toast or logging
+                }
             }
         }
     }
-    private inner class ReceiptAdapter (var receiptList: List<Receipts>)
-        : RecyclerView.Adapter<ReceiptHolder>()
-    {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReceiptHolder
-        {
+
+    private inner class ReceiptAdapter(var receiptList: List<Receipts>) :
+        RecyclerView.Adapter<ReceiptHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReceiptHolder {
             Log.d(LOG_TAG, "onCreateViewHolder called")
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.receipt_item, parent, false)
+            val view =
+                LayoutInflater.from(parent.context).inflate(R.layout.receipt_item, parent, false)
             return ReceiptHolder(view)
         }
 
@@ -164,6 +179,7 @@ class DashboardFragment : Fragment() {
 
         override fun getItemCount() = receiptList.size
     }
+
     private fun updateUI() {
         dbRepo.fetchAllReceipts().observe(viewLifecycleOwner) { receiptList ->
             Log.e(LOG_TAG, "albumList observe called with receiptList=$receiptList")

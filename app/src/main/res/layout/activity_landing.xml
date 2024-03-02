@@ -11,7 +11,7 @@
         android:id="@+id/textViewTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="152dp"
+        android:layout_marginTop="70dp"
         android:text="@string/title_receipt_saver"
         android:textColor="@color/black"
         android:textSize="50sp"
@@ -38,7 +38,7 @@
         android:layout_marginTop="24dp"
         android:text="@string/subtitle_say_goodbye"
         android:textColor="@color/black"
-        android:textSize="40sp"
+        android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/textView2"
         app:layout_constraintHorizontal_chainStyle="packed"
@@ -52,7 +52,7 @@
         android:layout_marginTop="24dp"
         android:text="@string/wave_hand"
         android:textColor="@color/black"
-        android:textSize="40sp"
+        android:textSize="30sp"
         app:layout_constraintStart_toEndOf="@+id/textView"
         app:layout_constraintTop_toBottomOf="@+id/imageViewReceipt" />
 
@@ -63,7 +63,7 @@
         android:layout_height="wrap_content"
         android:text="@string/to_paper_receipts"
         android:textColor="@color/black"
-        android:textSize="40sp"
+        android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="@+id/textView"
         app:layout_constraintTop_toBottomOf="@+id/textView" />

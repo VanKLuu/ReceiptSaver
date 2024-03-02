@@ -70,7 +70,11 @@ class ReceiptDetailFragment : Fragment() {
             if (imageData.isNotEmpty()) {
                 receiptPhoto.setImageBitmap(BitmapFactory.decodeByteArray(imageData, 0, imageData.size))
             }
+            else {
+                receiptPhoto.setImageResource(R.drawable.receipt_image)
+            }
         }
+
 
         return view
     }

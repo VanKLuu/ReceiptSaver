@@ -3,19 +3,27 @@ package com.example.receiptsaver
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
+import androidx.core.content.FileProvider
 import com.example.receiptsaver.db.MyDatabaseRepository
 import com.example.receiptsaver.db.Receipts
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.Executors
 
 private val TAG = "MainActivity"
 private val REQUEST_IMAGE_CAPTURE = 1
+private var currentPhotoPath: String? = null
 
 class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavigationView: BottomNavigationView
@@ -71,27 +79,63 @@ class MainActivity : AppCompatActivity() {
 
     private fun navigateToScan() {
         val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
+        val photoFile: File? = try {
+            createImageFile()
+        } catch (ex: IOException) {
+            Log.e(TAG, "Error creating photo file: ${ex.message}")
+            null
+        }
+        photoFile?.also {
+            val photoURI: Uri = FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.provider",
+                it
+            )
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+            startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun createImageFile(): File {
+        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val imageFile = File.createTempFile(
+            "JPEG_${System.currentTimeMillis()}_", /* prefix */
+            ".jpg", /* suffix */
+            storageDir /* directory */
+        )
+        currentPhotoPath = imageFile.absolutePath // Save the file path
+        return imageFile
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            // Get the captured image as a Bitmap
-            val imageBitmap = data?.extras?.get("data") as? Bitmap
+        if (requestCode == REQUEST_IMAGE_CAPTURE) {
+            if (resultCode == Activity.RESULT_OK) {
+                // Load the full-size image from the file
+                val imageFile = File(currentPhotoPath)
+                val imageBitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
+                if (imageBitmap != null) {
+                    // Convert the Bitmap to a byte array
+                    val imageByteArray = bitmapToByteArray(imageBitmap, quality = 100)
 
-            // Convert the Bitmap to a byte array
-            val imageByteArray = bitmapToByteArray(imageBitmap!!, quality = 100)
-
-            // Create a Receipts object with the photo data
-            val receipts = Receipts(
-                id = UUID.randomUUID(), // Generate a unique ID for the receipt
-                name = "Costco",    // Provide the store name
-                date = "2024-02-17",    // Provide the date
-                totalAmount = 100.0,      // Provide the total amount
-                image = imageByteArray  // Set the photo data
-            )
-            saveReceipt(receipts)
-            navigateToDashboard()
+                    // Create a Receipts object with the photo data
+                    val receipts = Receipts(
+                        id = UUID.randomUUID(), // Generate a unique ID for the receipt
+                        name = "Costco",    // Provide the store name
+                        date = "2024-02-17",    // Provide the date
+                        totalAmount = 100.0,      // Provide the total amount
+                        image = imageByteArray  // Set the photo data
+                    )
+                    saveReceipt(receipts)
+                    navigateToDashboard()
+                } else {
+                    // Handle the case when the image bitmap is null
+                    Toast.makeText(this, "Failed to capture image", Toast.LENGTH_SHORT).show()
+                }
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                // Handle the case when the user cancels the image capture process
+                Toast.makeText(this, "Image capture canceled", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

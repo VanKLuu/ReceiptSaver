@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <!-- SearchView below the Toolbar -->
+    <!-- SearchView -->
     <androidx.appcompat.widget.SearchView
         android:id="@+id/searchView"
         android:layout_width="match_parent"
@@ -19,7 +19,7 @@
         app:queryHint="@string/search"
         app:searchIcon="@null" />
 
-    <!-- Upload Button below the SearchView -->
+    <!-- Upload Button -->
     <Button
         android:id="@+id/buttonUpload"
         android:layout_width="wrap_content"
@@ -32,7 +32,7 @@
         android:textAllCaps="false"
         android:textColor="@android:color/white" />
 
-    <!-- "List of Receipts" TextView below the Upload Button -->
+    <!-- "List of Receipts" TextView -->
     <TextView
         android:id="@+id/textViewListHeader"
         android:layout_width="wrap_content"
@@ -52,6 +52,5 @@
         android:layout_marginTop="16dp"
         android:padding="8dp"
         tools:listitem="@layout/receipt_item" />
-
 
 </RelativeLayout>

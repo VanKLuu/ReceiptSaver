@@ -182,7 +182,7 @@ class DashboardFragment : Fragment() {
 
     private fun updateUI() {
         dbRepo.fetchAllReceipts().observe(viewLifecycleOwner) { receiptList ->
-            Log.e(LOG_TAG, "albumList observe called with receiptList=$receiptList")
+            Log.e(LOG_TAG, "receiptList observe called with receiptList=$receiptList")
             adapter = receiptList?.let { ReceiptAdapter(it) }
             this.receiptRecyclerView.adapter = adapter
         }

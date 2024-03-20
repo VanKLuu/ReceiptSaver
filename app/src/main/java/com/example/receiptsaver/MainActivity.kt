@@ -22,15 +22,18 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.Executors
 
-private val TAG = "MainActivity"
-private val REQUEST_IMAGE_CAPTURE = 1
+private const val TAG = "MainActivity"
+private const val REQUEST_IMAGE_CAPTURE = 1
 private var currentPhotoPath: String? = null
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var bottomNavigationView: BottomNavigationView
+
     private lateinit var dbRepo: MyDatabaseRepository
     private lateinit var textRecognizer: TextRecognizer
 
@@ -41,17 +44,21 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize text recognizer and download the model if needed
         textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-
         dbRepo = MyDatabaseRepository.getInstance(applicationContext)
-
-        bottomNavigationView = findViewById(R.id.bottomNavigationView)
+        setupBottomNavigationView()
+        if (savedInstanceState == null) {
+            navigateToDashboard()
+        }
+    }
+    private fun setupBottomNavigationView() {
+        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
         bottomNavigationView.setOnNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.navigation_home -> {
                     navigateToDashboard()
                     true
                 }
-                R.id.navigation_scan-> {
+                R.id.navigation_scan -> {
                     navigateToScan()
                     true
                 }
@@ -66,23 +73,14 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
-
-        val activityFragment = this.supportFragmentManager.findFragmentById(R.id.fragment_container)
-        if(activityFragment == null){
-            val fragment = DashboardFragment.newInstance()
-            this.supportFragmentManager
-                .beginTransaction()
-                .add(R.id.fragment_container, fragment)
-                .commit()
-
-        }
     }
 
     private fun navigateToDashboard() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, DashboardFragment())
             .commit()
-        bottomNavigationView.menu.findItem(R.id.navigation_home).isChecked = true
+        findViewById<BottomNavigationView>(R.id.bottomNavigationView).menu.findItem(R.id.navigation_home)
+            .isChecked = true
     }
 
     private fun navigateToScan() {
@@ -161,14 +159,20 @@ class MainActivity : AppCompatActivity() {
 
                 // Convert Bitmap to byte array
                 val imageByteArray = bitmapToByteArray(bitmap, 100)
+                // Generate thumbnail from the bitmap
+                val thumbnailBitmap = Bitmap.createScaledBitmap(bitmap, 120, 160, false)
+                // Convert thumbnail Bitmap to byte array
+                val thumbnailByteArray = bitmapToByteArray(thumbnailBitmap, 100)
+                val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
                 // Create a Receipts object with the extracted information
                 val receipts = Receipts(
                     id = UUID.randomUUID(), // Generate a unique ID for the receipt
                     name = name ?: "",     // Set the store name
-                    date = date ?: "",     // Set the date
+                    date = date ?: currentDate,     // Set the date
                     totalAmount = totalAmount ?: 0.0, // Set the total amount
-                    image = imageByteArray  // Set the photo data
+                    image = imageByteArray,  // Set the photo data
+                    thumbnail = thumbnailByteArray  // Set the thumbnail photo data
                 )
 
                 // Save the receipt to the database
@@ -186,32 +190,22 @@ class MainActivity : AppCompatActivity() {
 
     // Function to extract relevant information from the extracted text
     private fun extractInformationFromText(extractedText: String): Triple<String?, String?, Double?> {
-        // Split the extracted text into lines
         val lines = extractedText.split("\n")
-
-        // Initialize variables to store extracted information
         var storeName: String? = null
         var date: String? = null
         var totalAmount: Double? = null
 
-        // Iterate through each line of the extracted text
         for (line in lines) {
-
-            if (isDate(line)) {
-                date = line
-            }
-
-            else if (storeName == null) {
-                storeName = line
-            }
-
-            else if (isTotalAmount(line)) {
-                totalAmount = extractTotalAmount(line)
+            when {
+                isDate(line) -> date = line.trim() // Remove extra spaces from the date
+                storeName == null -> storeName = line.trim() // Remove extra spaces from the store name
+                isTotalAmount(line) -> totalAmount = extractTotalAmount(line.trim()) // Remove extra spaces from the total amount
             }
         }
 
         return Triple(storeName, date, totalAmount)
     }
+
 
 
     private fun isDate(text: String): Boolean {

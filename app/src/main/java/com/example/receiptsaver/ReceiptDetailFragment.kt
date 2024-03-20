@@ -21,13 +21,8 @@ class ReceiptDetailFragment : Fragment() {
     private lateinit var storeName: TextView
     private lateinit var totalAmount: TextView
     private lateinit var receiptDate: TextView
-    private lateinit var receipt: Receipts
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate called")
-    }
+    private lateinit var receiptId: String
+    private lateinit var dbRepo: MyDatabaseRepository
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,49 +37,47 @@ class ReceiptDetailFragment : Fragment() {
         totalAmount = view.findViewById(R.id.totalAmount)
         receiptDate = view.findViewById(R.id.receiptDate)
 
-        // Retrieve data from arguments
+        // Initialize database repository
+        dbRepo = MyDatabaseRepository(requireContext())
+
+        // Retrieve receipt ID from arguments
         arguments?.let { args ->
-            val receiptId = args.getString("id")
-            val receiptName = args.getString("name")
-            val receiptTotal = args.getDouble("total", 0.0) // Default value is 0.0
-            val receiptDate = args.getString("date")
-            val receiptImage = args.getByteArray("img")
-
-            // Create Receipts object
-            receipt = Receipts(
-                UUID.fromString(receiptId),
-                receiptName ?: "",
-                receiptDate ?: "",
-                receiptTotal,
-                receiptImage
-            )
+            receiptId = args.getString("id") ?: ""
         }
 
-        // Bind data to views
-        storeName.text = receipt.name
-        receiptDate.text = receipt.date
-        totalAmount.text = receipt.totalAmount.toString()
-
-        val imageData = receipt.image
-        if (imageData != null) {
-            val bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.size)
-
-            receiptPhoto.setImageBitmap(bitmap)
-        } else {
-            receiptPhoto.setImageResource(R.drawable.receipt_image)
-        }
+        // Load receipt information from the database
+        loadReceiptFromDatabase()
 
         return view
     }
+
+    private fun loadReceiptFromDatabase() {
+        dbRepo.fetchReceiptByID(receiptId).observe(viewLifecycleOwner)  { receipt ->
+            if (receipt != null) {
+                // Bind receipt information to views
+                storeName.text = receipt.name
+                receiptDate.text = receipt.date
+                totalAmount.text = receipt.totalAmount.toString()
+
+                val imageData = receipt.image
+                if (imageData != null) {
+                    val bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.size)
+                    receiptPhoto.setImageBitmap(bitmap)
+                } else {
+                    receiptPhoto.setImageResource(R.drawable.receipt_image)
+                }
+            } else {
+                // Handle the case when receipt is not found
+                Log.e(TAG, "Receipt with ID $receiptId not found in the database")
+            }
+        }
+    }
+
     companion object {
-        fun newInstance(id: String, name: String, image: ByteArray?, totalAmount: Double, date: String): ReceiptDetailFragment {
+        fun newInstance(id: String): ReceiptDetailFragment {
             val fragment = ReceiptDetailFragment()
             val args = Bundle()
             args.putString("id", id)
-            args.putString("name", name)
-            args.putByteArray("img", image)
-            args.putDouble("total", totalAmount)
-            args.putString("date", date)
             fragment.arguments = args
             return fragment
         }

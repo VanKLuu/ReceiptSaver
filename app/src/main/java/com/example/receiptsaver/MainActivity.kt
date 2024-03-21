@@ -163,7 +163,7 @@ class MainActivity : AppCompatActivity() {
                 val thumbnailBitmap = Bitmap.createScaledBitmap(bitmap, 120, 160, false)
                 // Convert thumbnail Bitmap to byte array
                 val thumbnailByteArray = bitmapToByteArray(thumbnailBitmap, 100)
-                val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                val currentDate = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(Date())
 
                 // Create a Receipts object with the extracted information
                 val receipts = Receipts(
@@ -196,25 +196,46 @@ class MainActivity : AppCompatActivity() {
         var totalAmount: Double? = null
 
         for (line in lines) {
+            val trimmedLine = line.trim()
+            val extractedDate = extractDateFromLine(trimmedLine)
             when {
-                isDate(line) -> date = line.trim() // Remove extra spaces from the date
-                storeName == null -> storeName = line.trim() // Remove extra spaces from the store name
-                isTotalAmount(line) -> totalAmount = extractTotalAmount(line.trim()) // Remove extra spaces from the total amount
+                extractedDate != null -> {
+                    date = formatDate(extractedDate)
+                }
+                storeName == null -> storeName = trimmedLine
+                isTotalAmount(trimmedLine) -> totalAmount = extractTotalAmount(trimmedLine)
             }
         }
 
         return Triple(storeName, date, totalAmount)
     }
 
+    // Function to format the date as MM/DD/YYYY
+    private fun formatDate(dateString: String): String {
+        val inputFormat = SimpleDateFormat("M/d/yyyy", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        val date = inputFormat.parse(dateString)
+        return outputFormat.format(date)
+    }
 
-
-    private fun isDate(text: String): Boolean {
+    private fun extractDateFromLine(line: String): String? {
         val datePatterns = arrayOf(
-            """\b\d{1,2}/\d{1,2}/\d{4}\b""",  // Matches dates in MM/DD/YYYY format
-            """\b\d{4}-\d{2}-\d{2}\b"""        // Matches dates in YYYY-MM-DD format
+            """^\d{1,2}/\d{1,2}/\d{4}\b""",    // Matches dates in MM/DD/YYYY format
+            """^\d{1,2}/\d{1,2}/\d{2,4}\b"""   // Matches dates in M/D/YYYY or MM/DD/YYYY format with a two or four-digit year
         )
-        // Check if any of the date patterns match the text
-        return datePatterns.any { pattern -> text.matches(pattern.toRegex()) }
+
+        // Iterate through each date pattern
+        for (pattern in datePatterns) {
+            val regex = pattern.toRegex()
+            val matchResult = regex.find(line)
+            if (matchResult != null) {
+                // Return the matched date string
+                return matchResult.value
+            }
+        }
+
+        // No date found in the line
+        return null
     }
 
     // Check if the text contains any of the terms "Total", "Subtotal", or "Balance Due"

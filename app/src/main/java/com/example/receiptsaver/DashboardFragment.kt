@@ -47,18 +47,24 @@ class DashboardFragment : Fragment() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 if (!query.isNullOrBlank()) {
-                    val fragmentTransaction = parentFragmentManager.beginTransaction()
-                    fragmentTransaction.replace(R.id.fragment_container, SearchFragment())
-                    fragmentTransaction.commit()
+                    navigateToSearchFragment(query)
                     return true
                 }
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
+                // Handle text changes here if needed
                 return true
             }
         })
+    }
+    private fun navigateToSearchFragment(query: String) {
+        val fragmentTransaction = parentFragmentManager.beginTransaction()
+        val searchFragment = SearchFragment.newInstance(query)
+        fragmentTransaction.replace(R.id.fragment_container, searchFragment)
+        fragmentTransaction.addToBackStack(null)
+        fragmentTransaction.commit()
     }
 
     override fun onStart() {

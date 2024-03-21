@@ -1,21 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SearchFragment">
+    tools:context=".SearchFragment"
+    android:background="@color/white">
 
-    <!-- SearchView below the Toolbar -->
+    <!-- SearchView -->
     <androidx.appcompat.widget.SearchView
         android:id="@+id/searchView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/searchview_background"
         android:padding="8dp"
+        app:autoShowKeyboard="true"
         app:iconifiedByDefault="false"
         app:queryHint="@string/search"
         app:searchIcon="@null" />
+
+    <!-- "List of Receipts" TextView -->
+    <TextView
+        android:id="@+id/textViewListHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/searchView"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/list_of_receipt"
+        android:textColor="@color/colorPrimary"
+        android:textSize="18sp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewReceipts"
@@ -26,4 +40,4 @@
         android:padding="8dp"
         tools:listitem="@layout/receipt_item" />
 
-</FrameLayout>
+</RelativeLayout>

@@ -12,7 +12,7 @@ interface MyDataAccessObject
     @Query("SELECT * FROM RECEIPTS ORDER BY date DESC")
     fun fetchAllReceipts(): LiveData<List<Receipts>>
 
-    @Query("SELECT * FROM RECEIPTS WHERE name=(:name)")
+    @Query("SELECT * FROM Receipts WHERE name LIKE '%' || :name || '%'")
     fun fetchReceiptsByName(name: String): LiveData<List<Receipts>>
 
     @Query("SELECT * FROM RECEIPTS WHERE id=(:id)")

@@ -37,7 +37,7 @@ class DashboardFragment : Fragment() {
         receiptRecyclerView = view.findViewById(R.id.recyclerViewReceipts) as RecyclerView
         adapter = ReceiptAdapter(emptyList())
         receiptRecyclerView.adapter = adapter
-        receiptRecyclerView.layoutManager = GridLayoutManager(context, 2)
+        receiptRecyclerView.layoutManager = GridLayoutManager(context, 1)
         return view
     }
 

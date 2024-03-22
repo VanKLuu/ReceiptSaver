@@ -44,7 +44,7 @@ class SearchFragment : Fragment() {
         receiptRecyclerView = view.findViewById(R.id.recyclerViewReceipts) as RecyclerView
         adapter = SearchAdapter(emptyList())
         receiptRecyclerView.adapter = adapter
-        receiptRecyclerView.layoutManager = GridLayoutManager(context, 2)
+        receiptRecyclerView.layoutManager = GridLayoutManager(context, 1)
         return view
     }
 

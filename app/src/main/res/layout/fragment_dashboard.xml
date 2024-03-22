@@ -50,6 +50,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/textViewListHeader"
         android:layout_marginTop="16dp"
+
+        android:background="#F6F1F1"
         android:padding="8dp"
         tools:listitem="@layout/receipt_item" />
 

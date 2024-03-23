@@ -50,17 +50,7 @@ class ExpensesFragment : Fragment() {
     }
 
     private fun fetchTotalAmountFromDatabase() {
-        GlobalScope.launch(Dispatchers.Main) {
-            // Fetch all receipts from the database
-            val allReceipts = databaseRepository.fetchAllReceipts().value ?: emptyList()
-
-            // Calculate total amount by summing up the totalAmount property of all receipts
-            var totalAmount = 0.0
-            for (receipt in allReceipts) {
-                totalAmount += receipt.totalAmount
-            }
-
-            // Set the total amount to the TextView
+        databaseRepository.fetchTotalAmount().observe(viewLifecycleOwner) { totalAmount ->
             totalAmountTextView.text = "Total Amount: $totalAmount"
         }
     }

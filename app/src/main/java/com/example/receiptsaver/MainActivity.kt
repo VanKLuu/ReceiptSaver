@@ -238,16 +238,15 @@ class MainActivity : AppCompatActivity() {
         return null
     }
 
-    // Check if the text contains any of the terms "Total", "Subtotal", or "Balance Due"
+    // Check if the text contains any of the terms "Total" or "Balance Due"
     private fun isTotalAmount(text: String): Boolean {
         return text.contains("Total", ignoreCase = true) ||
-                text.contains("Subtotal", ignoreCase = true) ||
                 text.contains("Balance Due", ignoreCase = true)
     }
 
     // Function to extract the total amount (balance due or total) from the text
     private fun extractTotalAmount(text: String): Double? {
-        val keywords = listOf("Total", "Subtotal", "Balance Due")
+        val keywords = listOf("Total", "Balance Due")
 
         // Search for the keywords in the text
         val keywordIndex = keywords.indexOfFirst { text.contains(it, ignoreCase = true) }

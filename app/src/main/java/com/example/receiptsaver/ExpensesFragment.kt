@@ -131,10 +131,6 @@ class ExpensesFragment : Fragment() {
         monthlyExpenditureChart.data = data
         monthlyExpenditureChart.invalidate() // Refresh the chart
     }
-
-
-
-
     private fun fetchTotalReceiptsFromDatabase() {
         databaseRepository.countTotalReceipts().observe(viewLifecycleOwner) { totalReceipts ->
             totalReceiptsTextView.text = "Total Receipts: $totalReceipts"

@@ -14,6 +14,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import com.example.receiptsaver.db.MyDatabaseRepository
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.components.XAxis
+import android.util.Log
+
+
 
 class ExpensesFragment : Fragment() {
     private lateinit var totalAmountTextView: TextView
@@ -65,12 +70,33 @@ class ExpensesFragment : Fragment() {
     }
 
     private fun populateChart(monthlyExpenditureData: List<Pair<String?, Double>>) {
-        val filteredData = monthlyExpenditureData.filter { it.first != null } // Filter out null values if any
+        // Define an array of abbreviated month names
+        val abbreviatedMonths = arrayOf(
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        )
 
-        val barEntries = filteredData.mapIndexedNotNull { index, pair ->
-            val month = pair.first ?: return@mapIndexedNotNull null // Skip null values
-            BarEntry(index.toFloat(), pair.second.toFloat())
+        // Create a map to store expenditure data for each month
+        val expenditureMap = abbreviatedMonths.associateWith { 0.0 }.toMutableMap()
+
+        // Log the initial map
+        Log.d("ExpensesFragment", "Initial expenditure map: $expenditureMap")
+
+        // Populate the map with available data
+        monthlyExpenditureData.forEach { (month, expenditure) ->
+            month?.let { expenditureMap[month] = expenditure }
         }
+
+        // Log the final map
+        Log.d("ExpensesFragment", "Populated expenditure map: $expenditureMap")
+
+        // Create a list of BarEntry objects for each month
+        val barEntries = abbreviatedMonths.indices.map { index ->
+            BarEntry(index.toFloat(), expenditureMap[abbreviatedMonths[index]]!!.toFloat())
+        }
+
+        // Log the bar entries
+        Log.d("ExpensesFragment", "Bar entries: $barEntries")
 
         val barDataSet = BarDataSet(barEntries, "Monthly Expenditure")
         val data = BarData(barDataSet)
@@ -82,11 +108,15 @@ class ExpensesFragment : Fragment() {
         monthlyExpenditureChart.xAxis.setDrawGridLines(false)
         monthlyExpenditureChart.axisLeft.setDrawGridLines(false)
         monthlyExpenditureChart.axisRight.setDrawGridLines(false)
-        monthlyExpenditureChart.xAxis.setDrawLabels(false)
-        monthlyExpenditureChart.axisLeft.setDrawLabels(false)
-        monthlyExpenditureChart.axisRight.setDrawLabels(false)
+
+        // Set custom labels for the x-axis
+        monthlyExpenditureChart.xAxis.valueFormatter = IndexAxisValueFormatter(abbreviatedMonths)
+        monthlyExpenditureChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+        monthlyExpenditureChart.xAxis.granularity = 1f
+        monthlyExpenditureChart.xAxis.labelCount = abbreviatedMonths.size
 
         monthlyExpenditureChart.data = data
-        monthlyExpenditureChart.invalidate()
+        monthlyExpenditureChart.invalidate() // Refresh the chart
     }
+
 }

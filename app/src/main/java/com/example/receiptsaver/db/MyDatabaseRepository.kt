@@ -69,11 +69,21 @@ class MyDatabaseRepository(context: Context) {
     // New method to fetch monthly expenditure
     fun fetchMonthlyExpenditure(): LiveData<List<Pair<String?, Double>>> {
         return myDao.fetchMonthlyExpenditure().map { monthlyExpenditureList ->
-            monthlyExpenditureList.map { monthlyExpenditure ->
-                monthlyExpenditure.month to monthlyExpenditure.total
+            // Log the size of the fetched list
+            Log.d("FetchMonthlyExpenditure", "Fetched data size: ${monthlyExpenditureList.size}")
+
+            // Map the data to pairs and log each pair
+            val mappedData = monthlyExpenditureList.map { monthlyExpenditure ->
+                val pair = monthlyExpenditure.month to monthlyExpenditure.total
+                Log.d("FetchMonthlyExpenditure", "Mapped pair: $pair")
+                pair
             }
+
+            // Return the mapped data
+            mappedData
         }
     }
+
 
 
     companion object {

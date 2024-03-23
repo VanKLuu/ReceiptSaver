@@ -22,7 +22,7 @@
         <!-- Assuming you are using a third-party library like MPAndroidChart -->
         <com.github.mikephil.charting.charts.BarChart
             android:id="@+id/chartMonthlyExpenditure"
-            android:layout_width="380dp"
+            android:layout_width="match_parent"
             android:layout_height="400dp"/>
 
         <!-- TextView for displaying the total number of receipts -->

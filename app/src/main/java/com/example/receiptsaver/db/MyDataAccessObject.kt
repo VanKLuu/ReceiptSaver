@@ -4,10 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 import java.util.UUID
 
-data class MonthlyExpenditure(
-    val month: String?,
-    val total: Double
-)
 @Dao // Data Access Object
 interface MyDataAccessObject
 {
@@ -35,7 +31,7 @@ interface MyDataAccessObject
     fun fetchTotalAmount(): LiveData<Double>
 
     // Query to fetch monthly expenditure data
-    @Query("SELECT strftime('%Y-%m', date) AS month, CAST(SUM(totalAmount) AS REAL) AS total FROM RECEIPTS GROUP BY month")
+    @Query("SELECT substr(date, 1, 2) AS month, SUM(totalAmount) AS total FROM RECEIPTS GROUP BY substr(date, 1, 2)")
     fun fetchMonthlyExpenditure(): LiveData<List<MonthlyExpenditure>>
 
     // Query to count the total number of receipts

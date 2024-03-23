@@ -58,9 +58,21 @@ class ExpensesFragment : Fragment() {
     private fun fetchMonthlyExpenditureFromDatabase() {
         databaseRepository.fetchMonthlyExpenditure()
             .observe(viewLifecycleOwner, { monthlyExpenditureData ->
-                monthlyExpenditureData?.let { populateChart(it) }
+                monthlyExpenditureData?.let {
+                    // Log the size of the data list
+                    Log.d("ExpensesFragment", "Monthly Expenditure Data Size: ${it.size}")
+
+                    // Log each pair in the data list
+                    it.forEachIndexed { index, pair ->
+                        Log.d("ExpensesFragment", "Monthly Expenditure Data[$index]: $pair")
+                    }
+
+                    // Pass the data to populateChart() function
+                    populateChart(it)
+                }
             })
     }
+
 
     private fun populateChart(monthlyExpenditureData: List<Pair<String?, Double>>) {
         // Define an array of abbreviated month names
@@ -77,7 +89,13 @@ class ExpensesFragment : Fragment() {
 
         // Populate the map with available data
         monthlyExpenditureData.forEach { (month, expenditure) ->
-            month?.let { expenditureMap[month] = expenditure }
+            month?.toIntOrNull()?.let { monthIndex ->
+                val monthAbbreviation = abbreviatedMonths.getOrNull(monthIndex - 1)
+                monthAbbreviation?.let {
+                    expenditureMap[it] = expenditure
+                    Log.d("ExpensesFragment", "Assigned value $expenditure to month $monthAbbreviation")
+                }
+            }
         }
 
         // Log the final map
@@ -85,7 +103,9 @@ class ExpensesFragment : Fragment() {
 
         // Create a list of BarEntry objects for each month
         val barEntries = abbreviatedMonths.indices.map { index ->
-            BarEntry(index.toFloat(), expenditureMap[abbreviatedMonths[index]]!!.toFloat())
+            val month = abbreviatedMonths[index]
+            val expenditure = expenditureMap[month] ?: 0.0
+            BarEntry(index.toFloat(), expenditure.toFloat())
         }
 
         // Log the bar entries
@@ -111,6 +131,9 @@ class ExpensesFragment : Fragment() {
         monthlyExpenditureChart.data = data
         monthlyExpenditureChart.invalidate() // Refresh the chart
     }
+
+
+
 
     private fun fetchTotalReceiptsFromDatabase() {
         databaseRepository.countTotalReceipts().observe(viewLifecycleOwner) { totalReceipts ->

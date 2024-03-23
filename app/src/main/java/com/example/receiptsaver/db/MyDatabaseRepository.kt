@@ -33,18 +33,34 @@ class MyDatabaseRepository(context: Context) {
 
     fun addReceipt(receipt: Receipts) {
         executor.execute {
-            myDao.addReceipt(receipt)
+            try {
+                myDao.addReceipt(receipt)
+                Log.d(TAG, "Receipt added: $receipt")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error adding receipt: $e")
+            }
         }
     }
 
     fun removeReceipt(id: String) {
         executor.execute {
-            myDao.removeReceipt(id)
+            try {
+                myDao.removeReceipt(id)
+                Log.d(TAG, "Receipt removed with ID: $id")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error removing receipt: $e")
+            }
         }
     }
 
     fun fetchAllReceipts(): LiveData<List<Receipts>> = myDao.fetchAllReceipts()
     fun fetchReceiptsByName(name: String): LiveData<List<Receipts>> = myDao.fetchReceiptsByName(name)
+
+
+    // Function to count the total number of receipts in the database
+    fun countTotalReceipts(): LiveData<Int> {
+        return myDao.countTotalReceipts()
+    }
     fun fetchReceiptByID(id: String): LiveData<Receipts?> = myDao.fetchReceiptByID(id)
 
     // New method to fetch total amount
@@ -58,6 +74,7 @@ class MyDatabaseRepository(context: Context) {
             }
         }
     }
+
 
     companion object {
         @Volatile

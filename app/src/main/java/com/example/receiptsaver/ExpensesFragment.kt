@@ -123,11 +123,7 @@ class ExpensesFragment : Fragment() {
     }
 
     private fun fetchTotalReceiptsFromDatabase() {
-        GlobalScope.launch(Dispatchers.Main) {
-            // Fetch the count of receipts from the database
-            val totalReceipts = databaseRepository.fetchAllReceipts().value?.size ?: 0
-
-            // Set the total number of captured receipts to the TextView
+        databaseRepository.countTotalReceipts().observe(viewLifecycleOwner) { totalReceipts ->
             totalReceiptsTextView.text = "Total Receipts: $totalReceipts"
         }
     }

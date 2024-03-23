@@ -37,4 +37,8 @@ interface MyDataAccessObject
     // Query to fetch monthly expenditure data
     @Query("SELECT strftime('%Y-%m', date) AS month, CAST(SUM(totalAmount) AS REAL) AS total FROM RECEIPTS GROUP BY month")
     fun fetchMonthlyExpenditure(): LiveData<List<MonthlyExpenditure>>
+
+    // Query to count the total number of receipts
+    @Query("SELECT COUNT(*) FROM RECEIPTS")
+    fun countTotalReceipts(): LiveData<Int>
 }

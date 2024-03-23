@@ -58,18 +58,33 @@ class ExpensesFragment : Fragment() {
     }
 
     private fun fetchMonthlyExpenditureFromDatabase() {
-        databaseRepository.fetchMonthlyExpenditure().observe(viewLifecycleOwner, { monthlyExpenditureData ->
-            monthlyExpenditureData?.let { populateChart(it) }
-        })
+        databaseRepository.fetchMonthlyExpenditure()
+            .observe(viewLifecycleOwner, { monthlyExpenditureData ->
+                monthlyExpenditureData?.let { populateChart(it) }
+            })
     }
 
     private fun populateChart(monthlyExpenditureData: List<Pair<String?, Double>>) {
-        val barEntries = monthlyExpenditureData.mapIndexed { index, pair ->
+        val filteredData = monthlyExpenditureData.filter { it.first != null } // Filter out null values if any
+
+        val barEntries = filteredData.mapIndexedNotNull { index, pair ->
+            val month = pair.first ?: return@mapIndexedNotNull null // Skip null values
             BarEntry(index.toFloat(), pair.second.toFloat())
         }
 
         val barDataSet = BarDataSet(barEntries, "Monthly Expenditure")
         val data = BarData(barDataSet)
+
+        // Configure the axis to display only positive values
+        monthlyExpenditureChart.axisLeft.axisMinimum = 0f
+
+        // Remove gridlines and labels if needed
+        monthlyExpenditureChart.xAxis.setDrawGridLines(false)
+        monthlyExpenditureChart.axisLeft.setDrawGridLines(false)
+        monthlyExpenditureChart.axisRight.setDrawGridLines(false)
+        monthlyExpenditureChart.xAxis.setDrawLabels(false)
+        monthlyExpenditureChart.axisLeft.setDrawLabels(false)
+        monthlyExpenditureChart.axisRight.setDrawLabels(false)
 
         monthlyExpenditureChart.data = data
         monthlyExpenditureChart.invalidate()

@@ -18,10 +18,9 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.components.XAxis
 import android.util.Log
 
-
-
 class ExpensesFragment : Fragment() {
     private lateinit var totalAmountTextView: TextView
+    private lateinit var totalReceiptsTextView: TextView
     private lateinit var monthlyExpenditureChart: BarChart
     private lateinit var databaseRepository: MyDatabaseRepository
 
@@ -31,6 +30,7 @@ class ExpensesFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_expenses, container, false)
         totalAmountTextView = view.findViewById(R.id.tvTotalAmount)
+        totalReceiptsTextView = view.findViewById(R.id.tvTotalReceipts) // Initialize tvTotalReceipts
         monthlyExpenditureChart = view.findViewById(R.id.chartMonthlyExpenditure)
         databaseRepository = MyDatabaseRepository(requireContext())
         return view
@@ -41,6 +41,9 @@ class ExpensesFragment : Fragment() {
 
         // Fetch total amount from receipts database
         fetchTotalAmountFromDatabase()
+
+        // Fetch total number of captured receipts from the database
+        fetchTotalReceiptsFromDatabase()
 
         // Fetch monthly expenditure data from receipts database
         fetchMonthlyExpenditureFromDatabase()
@@ -119,4 +122,13 @@ class ExpensesFragment : Fragment() {
         monthlyExpenditureChart.invalidate() // Refresh the chart
     }
 
+    private fun fetchTotalReceiptsFromDatabase() {
+        GlobalScope.launch(Dispatchers.Main) {
+            // Fetch the count of receipts from the database
+            val totalReceipts = databaseRepository.fetchAllReceipts().value?.size ?: 0
+
+            // Set the total number of captured receipts to the TextView
+            totalReceiptsTextView.text = "Total Receipts: $totalReceipts"
+        }
+    }
 }

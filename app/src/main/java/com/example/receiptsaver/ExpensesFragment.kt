@@ -1,59 +1,77 @@
 package com.example.receiptsaver
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import com.example.receiptsaver.db.MyDatabaseRepository
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ExpensesFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ExpensesFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var totalAmountTextView: TextView
+    private lateinit var monthlyExpenditureChart: BarChart
+    private lateinit var databaseRepository: MyDatabaseRepository
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_expenses, container, false)
+        val view = inflater.inflate(R.layout.fragment_expenses, container, false)
+        totalAmountTextView = view.findViewById(R.id.tvTotalAmount)
+        monthlyExpenditureChart = view.findViewById(R.id.chartMonthlyExpenditure)
+        databaseRepository = MyDatabaseRepository(requireContext())
+        return view
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ExpemsesFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ExpensesFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Fetch total amount from receipts database
+        fetchTotalAmountFromDatabase()
+
+        // Fetch monthly expenditure data from receipts database
+        fetchMonthlyExpenditureFromDatabase()
+    }
+
+    private fun fetchTotalAmountFromDatabase() {
+        GlobalScope.launch(Dispatchers.Main) {
+            // Fetch all receipts from the database
+            val allReceipts = databaseRepository.fetchAllReceipts().value ?: emptyList()
+
+            // Calculate total amount by summing up the totalAmount property of all receipts
+            var totalAmount = 0.0
+            for (receipt in allReceipts) {
+                totalAmount += receipt.totalAmount
             }
+
+            // Set the total amount to the TextView
+            totalAmountTextView.text = "Total Amount: $totalAmount"
+        }
+    }
+
+    private fun fetchMonthlyExpenditureFromDatabase() {
+        databaseRepository.fetchMonthlyExpenditure().observe(viewLifecycleOwner, { monthlyExpenditureData ->
+            monthlyExpenditureData?.let { populateChart(it) }
+        })
+    }
+
+    private fun populateChart(monthlyExpenditureData: List<Pair<String?, Double>>) {
+        val barEntries = monthlyExpenditureData.mapIndexed { index, pair ->
+            BarEntry(index.toFloat(), pair.second.toFloat())
+        }
+
+        val barDataSet = BarDataSet(barEntries, "Monthly Expenditure")
+        val data = BarData(barDataSet)
+
+        monthlyExpenditureChart.data = data
+        monthlyExpenditureChart.invalidate()
     }
 }

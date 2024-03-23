@@ -8,6 +8,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.room.Room
 import java.util.*
 import java.util.concurrent.Executors
+import androidx.lifecycle.map
+import kotlin.collections.map
+
+
 
 private const val TAG = "MyDatabaseRepository"
 private const val DATABASE_NAME = "ReceiptsSaver"
@@ -42,6 +46,18 @@ class MyDatabaseRepository(context: Context) {
     fun fetchAllReceipts(): LiveData<List<Receipts>> = myDao.fetchAllReceipts()
     fun fetchReceiptsByName(name: String): LiveData<List<Receipts>> = myDao.fetchReceiptsByName(name)
     fun fetchReceiptByID(id: String): LiveData<Receipts?> = myDao.fetchReceiptByID(id)
+
+    // New method to fetch total amount
+    fun fetchTotalAmount(): LiveData<Double> = myDao.fetchTotalAmount()
+
+    // New method to fetch monthly expenditure
+    fun fetchMonthlyExpenditure(): LiveData<List<Pair<String?, Double>>> {
+        return myDao.fetchMonthlyExpenditure().map { monthlyExpenditureList ->
+            monthlyExpenditureList.map { monthlyExpenditure ->
+                monthlyExpenditure.month to monthlyExpenditure.total
+            }
+        }
+    }
 
     companion object {
         @Volatile

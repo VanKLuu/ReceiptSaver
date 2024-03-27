@@ -2,6 +2,7 @@ package com.example.receiptsaver
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -11,6 +12,8 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.example.receiptsaver.db.MyDatabaseRepository
 import com.example.receiptsaver.db.Receipts
@@ -27,8 +30,8 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.Executors
+import android.Manifest
 
-private const val TAG = "MainActivity"
 private const val REQUEST_IMAGE_CAPTURE = 1
 private var currentPhotoPath: String? = null
 
@@ -46,6 +49,7 @@ class MainActivity : AppCompatActivity() {
         textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         dbRepo = MyDatabaseRepository.getInstance(applicationContext)
         setupBottomNavigationView()
+        checkCameraPermission()
         if (savedInstanceState == null) {
             navigateToDashboard()
         }
@@ -100,6 +104,43 @@ class MainActivity : AppCompatActivity() {
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
             startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
         }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
+                                            grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            REQUEST_CAMERA_PERMISSION -> {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission was granted
+                    // Proceed with camera operation
+                } else {
+                    // Permission denied
+                    // Handle permission denied scenario
+                    Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show()
+                }
+                return
+            }
+        }
+    }
+
+    private fun checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted
+            ActivityCompat.requestPermissions(this,
+                arrayOf(Manifest.permission.CAMERA),
+                REQUEST_CAMERA_PERMISSION)
+        } else {
+            openCamera()
+        }
+    }
+
+
+    private fun openCamera() {
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
     }
 
     @Throws(IOException::class)
@@ -312,6 +353,7 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "onDestroy called")
+        textRecognizer.close()
     }
 
     override fun onStart() {
@@ -333,6 +375,11 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         Log.d(TAG, "onPause called")
 
+    }
+
+    companion object {
+        private const val TAG = "MainActivity"
+        private const val REQUEST_CAMERA_PERMISSION = 101
     }
 
 }

@@ -31,6 +31,7 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.Executors
 import android.Manifest
+import com.google.mlkit.vision.text.Text
 
 private const val REQUEST_IMAGE_CAPTURE = 1
 private var currentPhotoPath: String? = null
@@ -49,7 +50,6 @@ class MainActivity : AppCompatActivity() {
         textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         dbRepo = MyDatabaseRepository.getInstance(applicationContext)
         setupBottomNavigationView()
-        checkCameraPermission()
         if (savedInstanceState == null) {
             navigateToDashboard()
         }
@@ -88,22 +88,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToScan() {
-        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        val photoFile: File? = try {
-            createImageFile()
-        } catch (ex: IOException) {
-            Log.e(TAG, "Error creating photo file: ${ex.message}")
-            null
-        }
-        photoFile?.also {
-            val photoURI: Uri = FileProvider.getUriForFile(
-                this,
-                "${applicationContext.packageName}.provider",
-                it
-            )
-            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-            startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
-        }
+        checkCameraPermission()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
@@ -140,7 +125,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun openCamera() {
         val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
+        val photoFile: File? = try {
+            createImageFile()
+        } catch (ex: IOException) {
+            Log.e(TAG, "Error creating photo file: ${ex.message}")
+            null
+        }
+        photoFile?.also {
+            val photoURI: Uri = FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.provider",
+                it
+            )
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+            startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
+        }
     }
 
     @Throws(IOException::class)
@@ -151,7 +150,7 @@ class MainActivity : AppCompatActivity() {
             ".jpg", /* suffix */
             storageDir /* directory */
         )
-        currentPhotoPath = imageFile.absolutePath // Save the file path
+        currentPhotoPath = imageFile.absolutePath // Set the value of currentPhotoPath
         return imageFile
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -159,14 +158,16 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == REQUEST_IMAGE_CAPTURE) {
             if (resultCode == Activity.RESULT_OK) {
                 // Load the full-size image from the file
-                val imageFile = File(currentPhotoPath)
-                val imageBitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
-                if (imageBitmap != null) {
-                    // Perform OCR on the captured image
-                    performOCR(imageBitmap)
-                } else {
-                    // Handle the case when the image bitmap is null
-                    Toast.makeText(this, "Failed to capture image", Toast.LENGTH_SHORT).show()
+                if (currentPhotoPath != null) { // Ensure currentPhotoPath is not null
+                    val imageFile = File(currentPhotoPath!!)
+                    val imageBitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
+                    if (imageBitmap != null) {
+                        // Perform OCR on the captured image
+                        performOCR(imageBitmap)
+                    } else {
+                        // Handle the case when the image bitmap is null
+                        Toast.makeText(this, "Failed to capture image", Toast.LENGTH_SHORT).show()
+                    }
                 }
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 // Handle the case when the user cancels the image capture process
@@ -189,7 +190,7 @@ class MainActivity : AppCompatActivity() {
         textRecognizer.process(image)
             .addOnSuccessListener { visionText ->
 
-                val extractedText = visionText.text
+                val extractedText = concatenateTextBlocks(visionText)
                 Log.d(TAG, "Extracted Text: $extractedText")
 
                 // Extract relevant information from the text
@@ -227,6 +228,21 @@ class MainActivity : AppCompatActivity() {
                 Log.e(TAG, "Text recognition failed: ${e.message}", e)
                 handleTextRecognitionFailure()
             }
+    }
+    private fun concatenateTextBlocks(text: Text): String {
+        val stringBuilder = StringBuilder()
+
+        // Iterate through each text block
+        for (block in text.textBlocks) {
+            // Append text from the current block to the StringBuilder
+            stringBuilder.append(block.text)
+
+            // Optionally, add a newline character between blocks
+            stringBuilder.append("\n")
+        }
+
+        // Convert StringBuilder to a String and return
+        return stringBuilder.toString()
     }
 
     // Function to extract relevant information from the extracted text

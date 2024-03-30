@@ -32,6 +32,7 @@ import java.util.UUID
 import java.util.concurrent.Executors
 import android.Manifest
 import com.google.mlkit.vision.text.Text
+import java.util.Comparator
 
 private const val REQUEST_IMAGE_CAPTURE = 1
 private var currentPhotoPath: String? = null
@@ -190,7 +191,7 @@ class MainActivity : AppCompatActivity() {
         textRecognizer.process(image)
             .addOnSuccessListener { visionText ->
 
-                val extractedText = concatenateTextBlocks(visionText)
+                val extractedText = getWellFormattedText(visionText.textBlocks)
                 Log.d(TAG, "Extracted Text: $extractedText")
 
                 // Extract relevant information from the text
@@ -229,21 +230,68 @@ class MainActivity : AppCompatActivity() {
                 handleTextRecognitionFailure()
             }
     }
-    private fun concatenateTextBlocks(text: Text): String {
-        val stringBuilder = StringBuilder()
+    private fun getWellFormattedText(blocks: List<Text.TextBlock>): String {
+        val textElements = mutableListOf<Text.Element>()
 
-        // Iterate through each text block
-        for (block in text.textBlocks) {
-            // Append text from the current block to the StringBuilder
-            stringBuilder.append(block.text)
+        // Breaking boxes
 
-            // Optionally, add a newline character between blocks
-            stringBuilder.append("\n")
+        for (block in blocks) {
+            for (line in block.lines) {
+                for (element in line.elements) {
+                    textElements.add(element)
+                }
+            }
         }
 
-        // Convert StringBuilder to a String and return
-        return stringBuilder.toString()
+        // Sorting boxes
+        val sortedElements = textElements.sortedWith(Comparator { t1, t2 ->
+            val diffOfTops = (t1.boundingBox?.top ?: 0) - (t2.boundingBox?.top ?: 0)
+            val diffOfLefts = (t1.boundingBox?.left ?: 0) - (t2.boundingBox?.left ?: 0)
+
+            val height = ((t1.boundingBox?.height() ?: 0) + (t2.boundingBox?.height() ?: 0)) / 2
+            val verticalDiff = (height * 0.35).toInt()
+
+            var result = diffOfLefts
+            if (Math.abs(diffOfTops) > verticalDiff) {
+                result = diffOfTops
+            }
+            result
+        })
+
+        val formattedText = StringBuilder()
+
+        // Organize sorted text elements into lines
+        val lines = mutableListOf<MutableList<Text.Element>>()
+        var currentLine = mutableListOf<Text.Element>()
+
+        for (element in sortedElements) {
+            if (currentLine.isNotEmpty() && !isSameLine(currentLine.last(), element)) {
+                lines.add(currentLine)
+                currentLine = mutableListOf()
+            }
+            currentLine.add(element)
+        }
+        lines.add(currentLine)
+
+        // Concatenate text elements within each line and add newline between lines
+        for (line in lines) {
+            for (element in line) {
+                formattedText.append(element.text).append(" ")
+            }
+            formattedText.append("\n")
+        }
+
+        return formattedText.toString()
     }
+
+    // Function to check if two elements are on the same line
+    private fun isSameLine(t1: Text.Element, t2: Text.Element): Boolean {
+        val diffOfTops = (t1.boundingBox!!.top ?: 0) - (t2.boundingBox!!.top ?: 0)
+        val height = ((t1.boundingBox!!.height() ?: 0) + (t2.boundingBox!!.height() ?: 0)) * 35 / 100
+
+        return Math.abs(diffOfTops) <= height
+    }
+
 
     // Function to extract relevant information from the extracted text
     private fun extractInformationFromText(extractedText: String): Triple<String?, String?, Double?> {
@@ -298,12 +346,13 @@ class MainActivity : AppCompatActivity() {
     // Check if the text contains any of the terms "Total" or "Balance Due"
     private fun isTotalAmount(text: String): Boolean {
         return text.contains("Total", ignoreCase = true) ||
-                text.contains("Balance Due", ignoreCase = true)
+                text.contains("Balance Due", ignoreCase = true)||
+                text.contains("Amount", ignoreCase = true)
     }
 
     // Function to extract the total amount (balance due or total) from the text
     private fun extractTotalAmount(text: String): Double? {
-        val keywords = listOf("Total", "Balance Due")
+        val keywords = listOf("Balance Due","Total", "Amount")
 
         // Search for the keywords in the text
         val keywordIndex = keywords.indexOfFirst { text.contains(it, ignoreCase = true) }

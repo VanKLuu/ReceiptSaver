@@ -23,7 +23,6 @@ class ReceiptUpdateFragment : Fragment() {
     private lateinit var receiptDate: EditText
     private lateinit var receiptId: String
     private lateinit var dbRepo: MyDatabaseRepository
-    val currencyFormat = NumberFormat.getCurrencyInstance()
     private lateinit var photoViewAttacher: PhotoViewAttacher
 
     override fun onCreateView(

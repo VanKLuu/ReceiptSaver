@@ -185,6 +185,7 @@ class MainActivity : AppCompatActivity() {
         // Convert Bitmap to InputImage
         val image = InputImage.fromBitmap(bitmap, 0)
 
+
         // Process the image for text recognition
         textRecognizer.process(image)
             .addOnSuccessListener { visionText ->
@@ -207,8 +208,10 @@ class MainActivity : AppCompatActivity() {
                 val currentDate = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(Date())
 
                 // Create a Receipts object with the extracted information
+                // Generate a unique ID for the receipt
+                val receiptId = UUID.randomUUID()
                 val receipts = Receipts(
-                    id = UUID.randomUUID(), // Generate a unique ID for the receipt
+                    id = receiptId,
                     name = name ?: "",     // Set the store name
                     date = date ?: currentDate,     // Set the date
                     totalAmount = totalAmount ?: 0.0, // Set the total amount
@@ -220,7 +223,7 @@ class MainActivity : AppCompatActivity() {
                 saveReceipt(receipts)
 
                 // Navigate to the dashboard screen
-                navigateToDashboard()
+                navigateToDetail(receiptId.toString())
             }
             .addOnFailureListener { e ->
                 // Text recognition failed, handle the failure
@@ -260,6 +263,13 @@ class MainActivity : AppCompatActivity() {
     private fun navigateToAccount() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, AccountFragment())
+            .commit()
+    }
+
+    private fun navigateToDetail(id: String) {
+        val fragment = ReceiptDetailFragment.newInstance(id)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
             .commit()
     }
 

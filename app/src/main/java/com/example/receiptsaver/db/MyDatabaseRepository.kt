@@ -41,6 +41,16 @@ class MyDatabaseRepository(context: Context) {
             }
         }
     }
+    fun updateReceipt(name: String, date: String, totalAmount: Double, receiptId: String) {
+        executor.execute {
+            try {
+                myDao.updateReceipt(name, date, totalAmount, receiptId)
+                Log.d(TAG, "Receipt updated: ID=$receiptId, Name=$name, Date=$date, TotalAmount=$totalAmount")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating receipt: $e")
+            }
+        }
+    }
 
     fun removeReceipt(id: String) {
         executor.execute {

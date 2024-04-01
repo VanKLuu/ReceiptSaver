@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:context=".ReceiptDetailFragment">
+        android:layout_height="0dp"
+        android:layout_weight="0.7">
 
         <!-- image view for displaying receipt image-->
         <com.github.chrisbanes.photoview.PhotoView
             android:id="@+id/receiptPhoto"
             android:layout_width="match_parent"
-            android:layout_height="400dp"
+            android:layout_height="wrap_content"
             android:adjustViewBounds="true"
             android:contentDescription="@string/receipt_photo"
             app:layout_constraintEnd_toEndOf="parent"
@@ -22,13 +23,17 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <!-- text view for displaying store name-->
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.3">
+
         <TextView
             android:id="@+id/storeName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="16dp"
             android:lines="1"
             android:maxLines="1"
             android:padding="4dp"
@@ -37,9 +42,8 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/receiptPhoto" />
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- text view for displaying date of the receipt-->
         <TextView
             android:id="@+id/receiptDate"
             android:layout_width="wrap_content"
@@ -56,7 +60,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/storeName" />
 
-        <!-- text view for displaying total amount-->
         <TextView
             android:id="@+id/totalAmount"
             android:layout_width="wrap_content"
@@ -72,6 +75,14 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/receiptDate" />
+        <Button
+            android:id="@+id/optionsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/storeName"
+            android:text="@string/actions" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+
+</LinearLayout>

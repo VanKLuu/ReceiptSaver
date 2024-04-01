@@ -7,14 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.util.Log
-import android.widget.ImageView
+import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import com.example.receiptsaver.db.MyDatabaseRepository
-import com.example.receiptsaver.db.Receipts
 import com.github.chrisbanes.photoview.PhotoView
 import com.github.chrisbanes.photoview.PhotoViewAttacher
 import java.text.NumberFormat
-import java.util.UUID
 
 
 private const val TAG = "ReceiptDetailFragment"
@@ -44,10 +43,47 @@ class ReceiptDetailFragment : Fragment() {
             receiptId = args.getString("id") ?: ""
         }
         photoViewAttacher = PhotoViewAttacher(receiptPhoto)
+        val optionsButton: Button = view.findViewById(R.id.optionsButton)
+        optionsButton.setOnClickListener {
+            showOptionsPopupMenu(it)
+        }
         loadReceiptFromDatabase()
         return view
     }
+    private fun showOptionsPopupMenu(anchorView: View) {
+        val popupMenu = PopupMenu(requireContext(), anchorView)
+        popupMenu.menuInflater.inflate(R.menu.receipt_detail_menu, popupMenu.menu)
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_update -> {
+                    updateReceipt()
+                    true
+                }
+                R.id.action_delete -> {
+                    deleteReceipt()
+                    true
+                }
+                else -> false
+            }
+        }
+        popupMenu.show()
+    }
+    private fun updateReceipt() {
+        val receiptUpdateFragment = ReceiptUpdateFragment.newInstance(receiptId)
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, receiptUpdateFragment)
+            .addToBackStack(null) // Add to back stack to enable back navigation
+            .commit()
+    }
 
+    private fun deleteReceipt() {
+        dbRepo.removeReceipt(receiptId)
+        val fragment = DashboardFragment.newInstance()
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
     private fun loadReceiptFromDatabase() {
         dbRepo.fetchReceiptByID(receiptId).observe(viewLifecycleOwner)  { receipt ->
             if (receipt != null) {

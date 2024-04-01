@@ -20,8 +20,9 @@ interface MyDataAccessObject
     @Insert
     fun addReceipt(receipt: Receipts)
 
-    @Update
-    fun updateReceipt(receipt: Receipts)
+    @Query("UPDATE RECEIPTS SET name = :name, date = :date, totalAmount = :totalAmount WHERE id = :receiptId")
+    fun updateReceipt(name: String, date: String, totalAmount: Double, receiptId: String)
+
 
     @Query("DELETE FROM RECEIPTS WHERE id=(:id)")
     fun removeReceipt(id: String)

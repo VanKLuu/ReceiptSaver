@@ -1,59 +1,110 @@
 package com.example.receiptsaver
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import com.example.receiptsaver.db.MyDatabaseRepository
+import com.github.chrisbanes.photoview.PhotoView
+import com.github.chrisbanes.photoview.PhotoViewAttacher
+import java.text.NumberFormat
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+private const val TAG = "ReceiptUpdateFragment"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [ReceiptUpdateFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ReceiptUpdateFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var receiptPhoto: PhotoView
+    private lateinit var storeName: EditText
+    private lateinit var totalAmount: EditText
+    private lateinit var receiptDate: EditText
+    private lateinit var receiptId: String
+    private lateinit var dbRepo: MyDatabaseRepository
+    val currencyFormat = NumberFormat.getCurrencyInstance()
+    private lateinit var photoViewAttacher: PhotoViewAttacher
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_receipt_update, container, false)
+        val view = inflater.inflate(R.layout.fragment_receipt_update, container, false)
+        receiptPhoto = view.findViewById(R.id.receiptPhoto)
+        storeName = view.findViewById(R.id.storeName)
+        totalAmount = view.findViewById(R.id.totalAmount)
+        receiptDate = view.findViewById(R.id.receiptDate)
+        dbRepo = MyDatabaseRepository(requireContext())
+        arguments?.let { args ->
+            receiptId = args.getString("id") ?: ""
+        }
+        photoViewAttacher = PhotoViewAttacher(receiptPhoto)
+        val saveButton: Button = view.findViewById(R.id.saveButton)
+        saveButton.setOnClickListener {
+            val name = storeName.text.toString()
+            val date = receiptDate.text.toString()
+            val amount = totalAmount.text.toString().toDoubleOrNull() ?: 0.0
+            saveReceiptChanges(name, date, amount, receiptId)
+        }
+        loadReceiptFromDatabase()
+        return view
+    }
+
+    private fun saveReceiptChanges(name: String, date: String, totalAmount: Double, receiptId: String) {
+        try {
+            // Update the receipt in the database
+            dbRepo.updateReceipt(name, date, totalAmount, receiptId)
+            Log.d(TAG, "Receipt changes saved: ID=$receiptId, Name=$name, Date=$date, TotalAmount=$totalAmount")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving receipt changes: $e")
+        }
+        navigateToReceiptDetail(receiptId)
+    }
+
+    private fun navigateToReceiptDetail(receiptId: String)
+    {
+        try {
+            val fragment = ReceiptDetailFragment.newInstance(receiptId)
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error navigating to detail fragment", e)
+        }
+    }
+
+    private fun loadReceiptFromDatabase() {
+        dbRepo.fetchReceiptByID(receiptId).observe(viewLifecycleOwner)  { receipt ->
+            if (receipt != null) {
+                // Bind receipt information to views
+                storeName.setText(receipt.name ?: "")
+                receiptDate.setText(receipt.date ?: "")
+                totalAmount.setText(receipt.totalAmount.toString())
+
+                val imageData = receipt.image
+                if (imageData != null) {
+                    val bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.size)
+                    receiptPhoto.setImageBitmap(bitmap)
+                    photoViewAttacher.update()
+                } else {
+                    receiptPhoto.setImageResource(R.drawable.receipt_image)
+                }
+            } else {
+                Log.e(TAG, "Receipt with ID $receiptId not found in the database")
+            }
+        }
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ReceiptUpdateFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ReceiptUpdateFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        fun newInstance(id: String): ReceiptUpdateFragment {
+            val fragment = ReceiptUpdateFragment()
+            val args = Bundle()
+            args.putString("id", id)
+            fragment.arguments = args
+            return fragment
+        }
     }
 }

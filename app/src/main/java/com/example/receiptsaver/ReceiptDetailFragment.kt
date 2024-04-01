@@ -11,6 +11,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.example.receiptsaver.db.MyDatabaseRepository
 import com.example.receiptsaver.db.Receipts
+import com.github.chrisbanes.photoview.PhotoView
+import com.github.chrisbanes.photoview.PhotoViewAttacher
 import java.text.NumberFormat
 import java.util.UUID
 
@@ -18,13 +20,14 @@ import java.util.UUID
 private const val TAG = "ReceiptDetailFragment"
 class ReceiptDetailFragment : Fragment() {
 
-    private lateinit var receiptPhoto: ImageView
+    private lateinit var receiptPhoto: PhotoView
     private lateinit var storeName: TextView
     private lateinit var totalAmount: TextView
     private lateinit var receiptDate: TextView
     private lateinit var receiptId: String
     private lateinit var dbRepo: MyDatabaseRepository
     val currencyFormat = NumberFormat.getCurrencyInstance()
+    private lateinit var photoViewAttacher: PhotoViewAttacher
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,24 +35,16 @@ class ReceiptDetailFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_receipt_detail, container, false)
-
-        // Initialize views
         receiptPhoto = view.findViewById(R.id.receiptPhoto)
         storeName = view.findViewById(R.id.storeName)
         totalAmount = view.findViewById(R.id.totalAmount)
         receiptDate = view.findViewById(R.id.receiptDate)
-
-        // Initialize database repository
         dbRepo = MyDatabaseRepository(requireContext())
-
-        // Retrieve receipt ID from arguments
         arguments?.let { args ->
             receiptId = args.getString("id") ?: ""
         }
-
-        // Load receipt information from the database
+        photoViewAttacher = PhotoViewAttacher(receiptPhoto)
         loadReceiptFromDatabase()
-
         return view
     }
 
@@ -66,11 +61,11 @@ class ReceiptDetailFragment : Fragment() {
                 if (imageData != null) {
                     val bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.size)
                     receiptPhoto.setImageBitmap(bitmap)
+                    photoViewAttacher.update()
                 } else {
                     receiptPhoto.setImageResource(R.drawable.receipt_image)
                 }
             } else {
-                // Handle the case when receipt is not found
                 Log.e(TAG, "Receipt with ID $receiptId not found in the database")
             }
         }

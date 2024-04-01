@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.example.receiptsaver.db.MyDatabaseRepository
 import com.example.receiptsaver.db.Receipts
+import java.text.NumberFormat
 import java.util.UUID
 
 
@@ -23,6 +24,7 @@ class ReceiptDetailFragment : Fragment() {
     private lateinit var receiptDate: TextView
     private lateinit var receiptId: String
     private lateinit var dbRepo: MyDatabaseRepository
+    val currencyFormat = NumberFormat.getCurrencyInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,7 +59,8 @@ class ReceiptDetailFragment : Fragment() {
                 // Bind receipt information to views
                 storeName.text = receipt.name
                 receiptDate.text = receipt.date
-                totalAmount.text = receipt.totalAmount.toString()
+                val formattedTotalAmount = currencyFormat.format(receipt.totalAmount)
+                totalAmount.text = "Total Amount: $formattedTotalAmount"
 
                 val imageData = receipt.image
                 if (imageData != null) {

@@ -17,12 +17,14 @@ import com.example.receiptsaver.db.MyDatabaseRepository
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.components.XAxis
 import android.util.Log
+import java.text.NumberFormat
 
 class ExpensesFragment : Fragment() {
     private lateinit var totalAmountTextView: TextView
     private lateinit var totalReceiptsTextView: TextView
     private lateinit var monthlyExpenditureChart: BarChart
     private lateinit var databaseRepository: MyDatabaseRepository
+    val currencyFormat = NumberFormat.getCurrencyInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,7 +53,8 @@ class ExpensesFragment : Fragment() {
 
     private fun fetchTotalAmountFromDatabase() {
         databaseRepository.fetchTotalAmount().observe(viewLifecycleOwner) { totalAmount ->
-            totalAmountTextView.text = "Total Amount: $totalAmount"
+            val formattedTotalAmount = currencyFormat.format(totalAmount)
+            totalAmountTextView.text = "Total Amount: $formattedTotalAmount"
         }
     }
 

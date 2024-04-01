@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.receiptsaver.db.MyDatabaseRepository
 import com.example.receiptsaver.db.Receipts
+import java.text.NumberFormat
 
 private const val LOG_TAG = "DashboardFragment"
 
@@ -75,11 +76,15 @@ class DashboardFragment : Fragment() {
     private inner class ReceiptHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val receiptPhoto: ImageView = itemView.findViewById(R.id.receiptPhoto)
         private val storeName: TextView = itemView.findViewById(R.id.storeName)
+        private val receiptDate: TextView = itemView.findViewById(R.id.receiptDate)
         private val totalAmount: TextView = itemView.findViewById(R.id.totalAmount)
+        val currencyFormat = NumberFormat.getCurrencyInstance()
 
         fun bind(receipts: Receipts) {
             storeName.text = receipts.name
-            totalAmount.text = receipts.totalAmount.toString()
+            receiptDate.text = receipts.date
+            val formattedTotalAmount = currencyFormat.format(receipts.totalAmount)
+            totalAmount.text = formattedTotalAmount.toString()
             val imageData = receipts.thumbnail
             if (imageData != null) {
                 val bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.size)

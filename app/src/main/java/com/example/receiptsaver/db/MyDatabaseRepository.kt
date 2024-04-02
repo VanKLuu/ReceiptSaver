@@ -62,23 +62,22 @@ class MyDatabaseRepository(context: Context) {
             }
         }
     }
-
+    // Function to get distinct years in the database
+    fun fetchDistinctYears(): LiveData<List<String>> = myDao.fetchDistinctYears()
     fun fetchAllReceipts(): LiveData<List<Receipts>> = myDao.fetchAllReceipts()
     fun fetchReceiptsByName(name: String): LiveData<List<Receipts>> = myDao.fetchReceiptsByName(name)
 
 
     // Function to count the total number of receipts in the database
-    fun countTotalReceipts(): LiveData<Int> {
-        return myDao.countTotalReceipts()
-    }
+    fun countTotalReceipts(year: String): LiveData<Int> = myDao.countTotalReceipts(year)
     fun fetchReceiptByID(id: String): LiveData<Receipts?> = myDao.fetchReceiptByID(id)
 
     // New method to fetch total amount
-    fun fetchTotalAmount(): LiveData<Double> = myDao.fetchTotalAmount()
+    fun fetchTotalAmount(year: String): LiveData<Double> = myDao.fetchTotalAmount(year)
 
     // New method to fetch monthly expenditure
-    fun fetchMonthlyExpenditure(): LiveData<List<Pair<String?, Double>>> {
-        return myDao.fetchMonthlyExpenditure().map { monthlyExpenditureList ->
+    fun fetchMonthlyExpenditure(year: String): LiveData<List<Pair<String?, Double>>> {
+        return myDao.fetchMonthlyExpenditure(year).map { monthlyExpenditureList ->
             // Log the size of the fetched list
             Log.d("FetchMonthlyExpenditure", "Fetched data size: ${monthlyExpenditureList.size}")
 

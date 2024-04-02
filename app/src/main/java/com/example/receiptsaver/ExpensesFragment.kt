@@ -17,13 +17,18 @@ import com.example.receiptsaver.db.MyDatabaseRepository
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.components.XAxis
 import android.util.Log
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import java.text.NumberFormat
+import java.util.Calendar
 
 class ExpensesFragment : Fragment() {
     private lateinit var totalAmountTextView: TextView
     private lateinit var totalReceiptsTextView: TextView
+    private lateinit var spinner: Spinner
     private lateinit var monthlyExpenditureChart: BarChart
-    private lateinit var databaseRepository: MyDatabaseRepository
+    private lateinit var dbRepo: MyDatabaseRepository
     val currencyFormat = NumberFormat.getCurrencyInstance()
 
     override fun onCreateView(
@@ -34,32 +39,55 @@ class ExpensesFragment : Fragment() {
         totalAmountTextView = view.findViewById(R.id.tvTotalAmount)
         totalReceiptsTextView = view.findViewById(R.id.tvTotalReceipts) // Initialize tvTotalReceipts
         monthlyExpenditureChart = view.findViewById(R.id.chartMonthlyExpenditure)
-        databaseRepository = MyDatabaseRepository(requireContext())
+        spinner = view.findViewById(R.id.yearSpinner)
+        dbRepo = MyDatabaseRepository(requireContext())
+        dbRepo.fetchDistinctYears().observe(viewLifecycleOwner) { distinctYears ->
+            if (distinctYears != null && distinctYears.isNotEmpty()) {
+                val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, distinctYears)
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                spinner.adapter = adapter
+            } else {
+                // Handle case when distinctYears is null or empty
+                Log.e("ExpensesFragment", "Distinct years list is null or empty")
+                // Set default value to the current year
+                val currentYear = Calendar.getInstance().get(Calendar.YEAR).toString()
+                val defaultAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listOf(currentYear))
+                defaultAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                spinner.adapter = defaultAdapter
+            }
+        }
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Fetch total amount from receipts database
-        fetchTotalAmountFromDatabase()
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedYear = parent?.getItemAtPosition(position).toString()
+                fetchTotalAmountFromDatabase(selectedYear)
+                fetchTotalReceiptsFromDatabase(selectedYear)
+                fetchMonthlyExpenditureFromDatabase(selectedYear)
+            }
 
-        // Fetch total number of captured receipts from the database
-        fetchTotalReceiptsFromDatabase()
-
-        // Fetch monthly expenditure data from receipts database
-        fetchMonthlyExpenditureFromDatabase()
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                val currentYear = Calendar.getInstance().get(Calendar.YEAR).toString()
+                fetchTotalAmountFromDatabase(currentYear)
+                fetchTotalReceiptsFromDatabase(currentYear)
+                fetchMonthlyExpenditureFromDatabase(currentYear)
+            }
+        }
     }
 
-    private fun fetchTotalAmountFromDatabase() {
-        databaseRepository.fetchTotalAmount().observe(viewLifecycleOwner) { totalAmount ->
+    private fun fetchTotalAmountFromDatabase(year: String) {
+        dbRepo.fetchTotalAmount(year).observe(viewLifecycleOwner) { totalAmount ->
             val formattedTotalAmount = currencyFormat.format(totalAmount)
             totalAmountTextView.text = "Total Amount: $formattedTotalAmount"
         }
     }
 
-    private fun fetchMonthlyExpenditureFromDatabase() {
-        databaseRepository.fetchMonthlyExpenditure()
+    private fun fetchMonthlyExpenditureFromDatabase(year: String) {
+        dbRepo.fetchMonthlyExpenditure(year)
             .observe(viewLifecycleOwner, { monthlyExpenditureData ->
                 monthlyExpenditureData?.let {
                     // Log the size of the data list
@@ -134,8 +162,8 @@ class ExpensesFragment : Fragment() {
         monthlyExpenditureChart.data = data
         monthlyExpenditureChart.invalidate() // Refresh the chart
     }
-    private fun fetchTotalReceiptsFromDatabase() {
-        databaseRepository.countTotalReceipts().observe(viewLifecycleOwner) { totalReceipts ->
+    private fun fetchTotalReceiptsFromDatabase(year: String) {
+        dbRepo.countTotalReceipts(year).observe(viewLifecycleOwner) { totalReceipts ->
             totalReceiptsTextView.text = "Total Receipts: $totalReceipts"
         }
     }

@@ -28,14 +28,18 @@ interface MyDataAccessObject
     fun removeReceipt(id: String)
 
     // Query to fetch the total amount from the receipts
-    @Query("SELECT SUM(totalAmount) FROM RECEIPTS")
-    fun fetchTotalAmount(): LiveData<Double>
+    @Query("SELECT SUM(totalAmount) FROM RECEIPTS WHERE substr(date, -4) = :year")
+    fun fetchTotalAmount(year: String): LiveData<Double>
 
     // Query to fetch monthly expenditure data
-    @Query("SELECT substr(date, 1, 2) AS month, SUM(totalAmount) AS total FROM RECEIPTS GROUP BY substr(date, 1, 2)")
-    fun fetchMonthlyExpenditure(): LiveData<List<MonthlyExpenditure>>
+    @Query("SELECT substr(date, 1, 2) AS month, SUM(totalAmount) AS total FROM RECEIPTS WHERE substr(date, -4) = :year GROUP BY substr(date, 1, 2)")
+    fun fetchMonthlyExpenditure(year: String): LiveData<List<MonthlyExpenditure>>
 
     // Query to count the total number of receipts
-    @Query("SELECT COUNT(*) FROM RECEIPTS")
-    fun countTotalReceipts(): LiveData<Int>
+    @Query("SELECT COUNT(*) FROM RECEIPTS WHERE substr(date, -4) = :year")
+    fun countTotalReceipts(year: String): LiveData<Int>
+
+    @Query("SELECT DISTINCT substr(date, -4) AS year FROM receipts ORDER BY year DESC")
+    fun fetchDistinctYears(): LiveData<List<String>>
+
 }

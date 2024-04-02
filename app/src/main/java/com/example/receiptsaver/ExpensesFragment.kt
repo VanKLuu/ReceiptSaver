@@ -29,7 +29,7 @@ class ExpensesFragment : Fragment() {
     private lateinit var spinner: Spinner
     private lateinit var monthlyExpenditureChart: BarChart
     private lateinit var dbRepo: MyDatabaseRepository
-    val currencyFormat = NumberFormat.getCurrencyInstance()
+    private val currencyFormat = NumberFormat.getCurrencyInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -88,23 +88,12 @@ class ExpensesFragment : Fragment() {
 
     private fun fetchMonthlyExpenditureFromDatabase(year: String) {
         dbRepo.fetchMonthlyExpenditure(year)
-            .observe(viewLifecycleOwner, { monthlyExpenditureData ->
+            .observe(viewLifecycleOwner) { monthlyExpenditureData ->
                 monthlyExpenditureData?.let {
-                    // Log the size of the data list
-                    Log.d("ExpensesFragment", "Monthly Expenditure Data Size: ${it.size}")
-
-                    // Log each pair in the data list
-                    it.forEachIndexed { index, pair ->
-                        Log.d("ExpensesFragment", "Monthly Expenditure Data[$index]: $pair")
-                    }
-
-                    // Pass the data to populateChart() function
                     populateChart(it)
                 }
-            })
+            }
     }
-
-
     private fun populateChart(monthlyExpenditureData: List<Pair<String?, Double>>) {
         // Define an array of abbreviated month names
         val abbreviatedMonths = arrayOf(

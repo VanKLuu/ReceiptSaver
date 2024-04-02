@@ -77,7 +77,7 @@ class YearFragment : Fragment() {
     }
 
     private fun fetchTotalAmountFromDatabase(year: String) {
-        dbRepo.fetchTotalAmount(year).observe(viewLifecycleOwner) { totalAmount ->
+        dbRepo.fetchTotalAmountOfYear(year).observe(viewLifecycleOwner) { totalAmount ->
             val formattedTotalAmount = currencyFormat.format(totalAmount)
             totalAmountTextView.text = "Total Amount: $formattedTotalAmount"
         }
@@ -149,7 +149,7 @@ class YearFragment : Fragment() {
         monthlyExpenditureChart.invalidate() // Refresh the chart
     }
     private fun fetchTotalReceiptsFromDatabase(year: String) {
-        dbRepo.countTotalReceipts(year).observe(viewLifecycleOwner) { totalReceipts ->
+        dbRepo.countTotalReceiptsOfYear(year).observe(viewLifecycleOwner) { totalReceipts ->
             totalReceiptsTextView.text = "Total Receipts: $totalReceipts"
         }
     }

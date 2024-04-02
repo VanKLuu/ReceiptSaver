@@ -1,59 +1,137 @@
 package com.example.receiptsaver
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import com.example.receiptsaver.db.MyDatabaseRepository
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [WeekFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class WeekFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var totalAmountTextView: TextView
+    private lateinit var totalReceiptsTextView: TextView
+    private lateinit var dailyExpenditureChart: BarChart
+    private lateinit var dbRepo: MyDatabaseRepository
+    private val currencyFormat = NumberFormat.getCurrencyInstance()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_week, container, false)
+        val view = inflater.inflate(R.layout.fragment_week, container, false)
+        totalAmountTextView = view.findViewById(R.id.tvTotalAmount)
+        totalReceiptsTextView = view.findViewById(R.id.tvTotalReceipts) // Initialize tvTotalReceipts
+        dailyExpenditureChart = view.findViewById(R.id.chartDailyExpenditure)
+        dbRepo = MyDatabaseRepository(requireContext())
+        return view
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment WeekFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            WeekFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val (startOfWeek, endOfWeek) = getStartAndEndOfWeek()
+
+        fetchTotalAmountFromDatabase(startOfWeek, endOfWeek)
+        fetchTotalReceiptsFromDatabase(startOfWeek, endOfWeek)
+        fetchDailyExpenditureFromDatabase(startOfWeek, endOfWeek)
+    }
+
+    private fun fetchTotalAmountFromDatabase(startOfWeek: String, endOfWeek: String) {
+        dbRepo.fetchTotalAmountOfWeek(startOfWeek, endOfWeek).observe(viewLifecycleOwner) { totalAmount ->
+            val formattedTotalAmount = currencyFormat.format(totalAmount)
+            totalAmountTextView.text = "Total Amount: $formattedTotalAmount"
+        }
+    }
+
+    private fun fetchDailyExpenditureFromDatabase(startOfWeek: String, endOfWeek: String) {
+        dbRepo.fetchDailyExpenditure(startOfWeek, endOfWeek)
+            .observe(viewLifecycleOwner) { dailyExpenditureData ->
+                dailyExpenditureData?.let {
+                    populateChart(it)
                 }
             }
+    }
+
+    private fun populateChart(dailyExpenditureData: List<Pair<String?, Double>>) {
+        val expenditureMap = mutableMapOf<String, Double>()
+        dailyExpenditureData.forEach { (dateString, expenditure) ->
+            dateString?.let { date ->
+                val dayOfWeek = getDayOfWeek(date)
+                expenditureMap[dayOfWeek] = expenditure
+                Log.d("ExpensesFragment", "Assigned value $expenditure to day $dayOfWeek")
+            }
+        }
+
+        // Define an array of abbreviated day names
+        val abbreviatedDayOfWeeks = arrayOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+
+        // Create a list of BarEntry objects for each day of the week
+        val barEntries = abbreviatedDayOfWeeks.mapIndexed { index, dayOfWeek ->
+            val expenditure = expenditureMap[dayOfWeek] ?: 0.0
+            BarEntry(index.toFloat(), expenditure.toFloat())
+        }
+
+        val barDataSet = BarDataSet(barEntries, "Daily Expenditure")
+        val data = BarData(barDataSet)
+
+        // Configure the axis to display only positive values
+        dailyExpenditureChart.axisLeft.axisMinimum = 0f
+
+        // Remove gridlines and labels if needed
+        dailyExpenditureChart.xAxis.setDrawGridLines(false)
+        dailyExpenditureChart.axisLeft.setDrawGridLines(false)
+        dailyExpenditureChart.axisRight.setDrawGridLines(false)
+
+        // Set custom labels for the x-axis
+        dailyExpenditureChart.xAxis.valueFormatter = IndexAxisValueFormatter(abbreviatedDayOfWeeks)
+        dailyExpenditureChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+        dailyExpenditureChart.xAxis.granularity = 1f
+        dailyExpenditureChart.xAxis.labelCount = abbreviatedDayOfWeeks.size
+
+        dailyExpenditureChart.data = data
+        dailyExpenditureChart.invalidate() // Refresh the chart
+    }
+    private fun fetchTotalReceiptsFromDatabase(startOfWeek: String, endOfWeek: String) {
+        dbRepo.countTotalReceiptsOfWeek(startOfWeek, endOfWeek).observe(viewLifecycleOwner) { totalReceipts ->
+            totalReceiptsTextView.text = "Total Receipts: $totalReceipts"
+        }
+    }
+    private fun getDayOfWeek(dateString: String): String {
+        val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.US)
+        val calendar = Calendar.getInstance()
+        calendar.time = dateFormat.parse(dateString) ?: Date()
+        val dayOfWeekIndex = calendar.get(Calendar.DAY_OF_WEEK)
+        val abbreviatedDayOfWeeks = arrayOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+        return abbreviatedDayOfWeeks[dayOfWeekIndex - 1]
+    }
+    private fun getStartAndEndOfWeek(): Pair<String, String> {
+        val calendar = Calendar.getInstance()
+        calendar.firstDayOfWeek = Calendar.SUNDAY
+        calendar.time = Date()
+        val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.US)
+
+        // Get the start date of the week (Sunday)
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
+        val startOfWeek = dateFormat.format(calendar.time)
+
+        // Get the end date of the week (Saturday)
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY)
+        val endOfWeek = dateFormat.format(calendar.time)
+
+        return Pair(startOfWeek, endOfWeek)
     }
 }

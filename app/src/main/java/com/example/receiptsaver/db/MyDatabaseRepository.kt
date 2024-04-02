@@ -62,20 +62,18 @@ class MyDatabaseRepository(context: Context) {
             }
         }
     }
-    // Function to get distinct years in the database
-    fun fetchDistinctYears(): LiveData<List<String>> = myDao.fetchDistinctYears()
+
     fun fetchAllReceipts(): LiveData<List<Receipts>> = myDao.fetchAllReceipts()
     fun fetchReceiptsByName(name: String): LiveData<List<Receipts>> = myDao.fetchReceiptsByName(name)
-
-
-    // Function to count the total number of receipts in the database
-    fun countTotalReceipts(year: String): LiveData<Int> = myDao.countTotalReceipts(year)
     fun fetchReceiptByID(id: String): LiveData<Receipts?> = myDao.fetchReceiptByID(id)
 
-    // New method to fetch total amount
-    fun fetchTotalAmount(year: String): LiveData<Double> = myDao.fetchTotalAmount(year)
-
-    // New method to fetch monthly expenditure
+    // Function to count the total number of receipts of year
+    fun countTotalReceiptsOfYear(year: String): LiveData<Int> = myDao.countTotalReceiptsOfYear(year)
+    // Function to fetch total amount of year
+    fun fetchTotalAmountOfYear(year: String): LiveData<Double> = myDao.fetchTotalAmountOfYear(year)
+    // Functions to get distinct years in the database
+    fun fetchDistinctYears(): LiveData<List<String>> = myDao.fetchDistinctYears()
+    // Function to fetch monthly expenditure
     fun fetchMonthlyExpenditure(year: String): LiveData<List<Pair<String?, Double>>> {
         return myDao.fetchMonthlyExpenditure(year).map { monthlyExpenditureList ->
             // Log the size of the fetched list
@@ -93,6 +91,28 @@ class MyDatabaseRepository(context: Context) {
         }
     }
 
+
+    // Function to count the total number of receipts of week
+    fun countTotalReceiptsOfWeek(startOfWeek: String, endOfWeek: String): LiveData<Int> = myDao.countTotalReceiptsOfWeek(startOfWeek,endOfWeek)
+    // Function to fetch total amount of week
+    fun fetchTotalAmountOfWeek(startOfWeek: String, endOfWeek: String): LiveData<Double> = myDao.fetchTotalAmountOfWeek(startOfWeek,endOfWeek)
+    // Functions to fetch daily expenditure
+    fun fetchDailyExpenditure(startOfWeek: String, endOfWeek: String): LiveData<List<Pair<String?, Double>>> {
+        return myDao.fetchDailyExpenditure(startOfWeek, endOfWeek).map { dailyExpenditureList ->
+            // Log the size of the fetched list
+            Log.d("FetchDailyExpenditure", "Fetched data size: ${dailyExpenditureList.size}")
+
+            // Map the data to pairs and log each pair
+            val mappedData = dailyExpenditureList.map { dailyExpenditure ->
+                val pair = dailyExpenditure.date to dailyExpenditure.total
+                Log.d("FetchDailyExpenditure", "Mapped pair: $pair")
+                pair
+            }
+
+            // Return the mapped data
+            mappedData
+        }
+    }
 
 
     companion object {

@@ -1,5 +1,6 @@
 package com.example.receiptsaver
 
+import android.app.DatePickerDialog
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
@@ -8,19 +9,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.TextView
 import com.example.receiptsaver.db.MyDatabaseRepository
 import com.github.chrisbanes.photoview.PhotoView
 import com.github.chrisbanes.photoview.PhotoViewAttacher
-import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 private const val TAG = "ReceiptUpdateFragment"
 
-class ReceiptUpdateFragment : Fragment() {
+class ReceiptUpdateFragment : Fragment() , DatePickerDialog.OnDateSetListener{
     private lateinit var receiptPhoto: PhotoView
     private lateinit var storeName: EditText
     private lateinit var totalAmount: EditText
-    private lateinit var receiptDate: EditText
+    private lateinit var receiptDate: TextView
     private lateinit var receiptId: String
     private lateinit var dbRepo: MyDatabaseRepository
     private lateinit var photoViewAttacher: PhotoViewAttacher
@@ -41,6 +46,9 @@ class ReceiptUpdateFragment : Fragment() {
         }
         photoViewAttacher = PhotoViewAttacher(receiptPhoto)
         val saveButton: Button = view.findViewById(R.id.saveButton)
+        receiptDate.setOnClickListener {
+            showDatePickerDialog()
+        }
         saveButton.setOnClickListener {
             val name = storeName.text.toString()
             val date = receiptDate.text.toString()
@@ -50,7 +58,25 @@ class ReceiptUpdateFragment : Fragment() {
         loadReceiptFromDatabase()
         return view
     }
+    private fun showDatePickerDialog() {
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
 
+        val datePickerDialog = DatePickerDialog(requireContext(), this, year, month, dayOfMonth)
+        datePickerDialog.show()
+    }
+    override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
+        val selectedCalendar = Calendar.getInstance()
+        selectedCalendar.set(Calendar.YEAR, year)
+        selectedCalendar.set(Calendar.MONTH, month)
+        selectedCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+
+        val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        val formattedDate = dateFormat.format(selectedCalendar.time)
+        receiptDate.text = formattedDate
+    }
     private fun saveReceiptChanges(name: String, date: String, totalAmount: Double, receiptId: String) {
         try {
             // Update the receipt in the database
@@ -80,7 +106,7 @@ class ReceiptUpdateFragment : Fragment() {
             if (receipt != null) {
                 // Bind receipt information to views
                 storeName.setText(receipt.name ?: "")
-                receiptDate.setText(receipt.date ?: "")
+                receiptDate.text = receipt.date
                 totalAmount.setText(receipt.totalAmount.toString())
 
                 val imageData = receipt.image

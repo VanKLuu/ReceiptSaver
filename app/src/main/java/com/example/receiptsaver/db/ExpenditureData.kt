@@ -1,9 +1,7 @@
 package com.example.receiptsaver.db
 
 data class WeeklyExpenditure(
-    val weekNumber: Int,
-    val startDate: String?,
-    val endDate: String?,
+    val weekNumber: String?,
     val total: Double
 )
 data class MonthlyExpenditure(

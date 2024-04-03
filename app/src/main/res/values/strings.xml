@@ -28,6 +28,7 @@
     <string name="total_amount_label">Total Amount: $</string>
     <string name="year">Year: </string>
     <string name="report">Report</string>
+    <string name="month">Month:</string>
     <!-- Other string resources -->
     <string-array name="language_options">
         <item>English</item>

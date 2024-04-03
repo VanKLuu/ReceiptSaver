@@ -51,7 +51,7 @@ class WeekFragment : Fragment() {
     }
 
     private fun fetchTotalAmountFromDatabase(startOfWeek: String, endOfWeek: String) {
-        dbRepo.fetchTotalAmountOfWeek(startOfWeek, endOfWeek).observe(viewLifecycleOwner) { totalAmount ->
+        dbRepo.fetchTotalAmount(startOfWeek, endOfWeek).observe(viewLifecycleOwner) { totalAmount ->
             val formattedTotalAmount = currencyFormat.format(totalAmount)
             totalAmountTextView.text = "Total Amount: $formattedTotalAmount"
         }
@@ -65,7 +65,11 @@ class WeekFragment : Fragment() {
                 }
             }
     }
-
+    private fun fetchTotalReceiptsFromDatabase(startOfWeek: String, endOfWeek: String) {
+        dbRepo.countTotalReceipts(startOfWeek, endOfWeek).observe(viewLifecycleOwner) { totalReceipts ->
+            totalReceiptsTextView.text = "Total Receipts: $totalReceipts"
+        }
+    }
     private fun populateChart(dailyExpenditureData: List<Pair<String?, Double>>) {
         val expenditureMap = mutableMapOf<String, Double>()
         dailyExpenditureData.forEach { (dateString, expenditure) ->
@@ -85,31 +89,20 @@ class WeekFragment : Fragment() {
             BarEntry(index.toFloat(), expenditure.toFloat())
         }
 
+        // Set custom labels for the x-axis
+        val labels = abbreviatedDayOfWeeks.toList()
+        dailyExpenditureChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+        dailyExpenditureChart.xAxis.labelCount = labels.size
+
+        // Create a BarDataSet and set its data
         val barDataSet = BarDataSet(barEntries, "Daily Expenditure")
         val data = BarData(barDataSet)
 
-        // Configure the axis to display only positive values
-        dailyExpenditureChart.axisLeft.axisMinimum = 0f
-
-        // Remove gridlines and labels if needed
-        dailyExpenditureChart.xAxis.setDrawGridLines(false)
-        dailyExpenditureChart.axisLeft.setDrawGridLines(false)
-        dailyExpenditureChart.axisRight.setDrawGridLines(false)
-
-        // Set custom labels for the x-axis
-        dailyExpenditureChart.xAxis.valueFormatter = IndexAxisValueFormatter(abbreviatedDayOfWeeks)
-        dailyExpenditureChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
-        dailyExpenditureChart.xAxis.granularity = 1f
-        dailyExpenditureChart.xAxis.labelCount = abbreviatedDayOfWeeks.size
-
+        // Apply data to the chart and refresh it
         dailyExpenditureChart.data = data
-        dailyExpenditureChart.invalidate() // Refresh the chart
+        dailyExpenditureChart.invalidate()
     }
-    private fun fetchTotalReceiptsFromDatabase(startOfWeek: String, endOfWeek: String) {
-        dbRepo.countTotalReceiptsOfWeek(startOfWeek, endOfWeek).observe(viewLifecycleOwner) { totalReceipts ->
-            totalReceiptsTextView.text = "Total Receipts: $totalReceipts"
-        }
-    }
+
     private fun getDayOfWeek(dateString: String): String {
         val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.US)
         val calendar = Calendar.getInstance()

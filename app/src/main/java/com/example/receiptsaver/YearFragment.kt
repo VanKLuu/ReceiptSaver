@@ -12,7 +12,6 @@ import android.widget.Spinner
 import android.widget.TextView
 import com.example.receiptsaver.db.MyDatabaseRepository
 import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
@@ -128,25 +127,18 @@ class YearFragment : Fragment() {
         // Log the bar entries
         Log.d("ExpensesFragment", "Bar entries: $barEntries")
 
+        // Set custom labels for the x-axis
+        val labels = abbreviatedMonths.toList()
+        monthlyExpenditureChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+        monthlyExpenditureChart.xAxis.labelCount = labels.size
+
+        // Create a BarDataSet and set its data
         val barDataSet = BarDataSet(barEntries, "Monthly Expenditure")
         val data = BarData(barDataSet)
 
-        // Configure the axis to display only positive values
-        monthlyExpenditureChart.axisLeft.axisMinimum = 0f
-
-        // Remove gridlines and labels if needed
-        monthlyExpenditureChart.xAxis.setDrawGridLines(false)
-        monthlyExpenditureChart.axisLeft.setDrawGridLines(false)
-        monthlyExpenditureChart.axisRight.setDrawGridLines(false)
-
-        // Set custom labels for the x-axis
-        monthlyExpenditureChart.xAxis.valueFormatter = IndexAxisValueFormatter(abbreviatedMonths)
-        monthlyExpenditureChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
-        monthlyExpenditureChart.xAxis.granularity = 1f
-        monthlyExpenditureChart.xAxis.labelCount = abbreviatedMonths.size
-
+        // Apply data to the chart and refresh it
         monthlyExpenditureChart.data = data
-        monthlyExpenditureChart.invalidate() // Refresh the chart
+        monthlyExpenditureChart.invalidate()
     }
     private fun fetchTotalReceiptsFromDatabase(year: String) {
         dbRepo.countTotalReceiptsOfYear(year).observe(viewLifecycleOwner) { totalReceipts ->

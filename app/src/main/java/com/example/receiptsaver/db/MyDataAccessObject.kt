@@ -65,4 +65,8 @@ interface MyDataAccessObject
     @Query("SELECT COUNT(*) FROM receipts WHERE date BETWEEN :startOfWeek AND :endOfWeek")
     fun countTotalReceipts(startOfWeek: String, endOfWeek: String): LiveData<Int>
 
+    // Query to fetch the total amount today
+    @Query("SELECT SUM(totalAmount) FROM RECEIPTS WHERE date = :currentDate")
+    fun fetchTotalAmountForToday(currentDate: String): Double
+
 }

@@ -71,6 +71,8 @@ class MyDatabaseRepository(context: Context) {
     fun countTotalReceiptsOfYear(year: String): LiveData<Int> = myDao.countTotalReceiptsOfYear(year)
     // Function to fetch total amount of year
     fun fetchTotalAmountOfYear(year: String): LiveData<Double> = myDao.fetchTotalAmountOfYear(year)
+    // Functions to fetch total amount today
+    fun fetchTotalAmountForToday(currentDate: String): Double = myDao.fetchTotalAmountForToday(currentDate)
     // Functions to get distinct years in the database
     fun fetchDistinctYears(): LiveData<List<String>> = myDao.fetchDistinctYears()
     // Function to fetch monthly expenditure

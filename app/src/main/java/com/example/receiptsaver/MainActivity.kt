@@ -31,6 +31,10 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.Executors
 import android.Manifest
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 
 
 private const val REQUEST_IMAGE_CAPTURE = 1
@@ -53,6 +57,18 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             navigateToDashboard()
         }
+        // Schedule daily work
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val dailyWorkRequest =
+            OneTimeWorkRequestBuilder<DailyNotificationWorker>()
+                .setConstraints(constraints)
+                .build()
+
+        WorkManager.getInstance(applicationContext).enqueue(dailyWorkRequest)
+
     }
     private fun setupBottomNavigationView() {
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)

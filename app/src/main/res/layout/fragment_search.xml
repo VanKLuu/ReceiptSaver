@@ -41,4 +41,40 @@
         android:padding="8dp"
         tools:listitem="@layout/receipt_item" />
 
+
+    <RelativeLayout
+        android:id="@+id/notFoundLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/recyclerViewReceipts"
+        android:visibility="gone"
+        android:padding="16dp"
+        android:gravity="center"
+        tools:context=".DashboardFragment">
+
+        <ImageView
+            android:id="@+id/imageViewNotFound"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@mipmap/ic_not_found" />
+
+        <TextView
+            android:id="@+id/textViewNotFoundTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/imageViewNotFound"
+            android:layout_marginTop="24dp"
+            android:text="Not Found"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+        <TextView
+            android:id="@+id/textViewNotFoundSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/textViewNotFoundTitle"
+            android:layout_marginTop="8dp"
+            android:text="We're sorry, the keyword you were looking for could not be found. Please search with another keyword."
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+    </RelativeLayout>
+
 </RelativeLayout>

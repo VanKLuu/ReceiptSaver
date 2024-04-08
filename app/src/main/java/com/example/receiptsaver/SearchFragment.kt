@@ -15,15 +15,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.receiptsaver.db.MyDatabaseRepository
 import com.example.receiptsaver.db.Receipts
 
+
+
 private const val LOG_TAG = "SearchFragment"
 
-class SearchFragment : Fragment() {
 
+class SearchFragment : Fragment() {
     private lateinit var receiptRecyclerView: RecyclerView
     private lateinit var searchView: SearchView
     private var adapter: SearchAdapter? = null
     private lateinit var dbRepo: MyDatabaseRepository
     private lateinit var searchQuery: String
+    private lateinit var notFoundLayout: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,9 +36,7 @@ class SearchFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
         dbRepo = MyDatabaseRepository(requireContext())
@@ -45,6 +46,7 @@ class SearchFragment : Fragment() {
         adapter = SearchAdapter(emptyList())
         receiptRecyclerView.adapter = adapter
         receiptRecyclerView.layoutManager = GridLayoutManager(context, 1)
+        notFoundLayout = view.findViewById(R.id.notFoundLayout)
         return view
     }
 
@@ -123,12 +125,23 @@ class SearchFragment : Fragment() {
 
     private fun updateUI() {
         dbRepo.fetchReceiptsByName(searchQuery).observe(viewLifecycleOwner) { receiptList ->
-            adapter?.let {
-                it.receiptList = receiptList
-                it.notifyDataSetChanged()
+            if (receiptList.isEmpty() && searchQuery.isNotEmpty()) {
+                // Search was performed but no results were found
+                notFoundLayout.visibility = View.VISIBLE
+                receiptRecyclerView.visibility = View.GONE
+            } else {
+                // Search results are present or the search query is empty
+                notFoundLayout.visibility = View.GONE
+                receiptRecyclerView.visibility = View.VISIBLE
+
+                adapter?.let {
+                    it.receiptList = receiptList
+                    it.notifyDataSetChanged()
+                }
             }
         }
     }
+
 
     companion object {
         private const val SEARCH_QUERY_KEY = "search_query"

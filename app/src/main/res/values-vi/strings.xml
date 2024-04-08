@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bảo Quản Hóa Đơn</string>
+    <string name="title_receipt_saver">Bảo Quản Hóa Đơn</string>
+    <string name="subtitle_say_goodbye">Nói tạm biệt</string>
+    <string name="wave_hand">👋</string>
+    <string name="to_paper_receipts">với hóa đơn giấy</string>
+
+    <string name="search">Tìm kiếm</string>
+    <string name="list_of_receipt">Danh Sách Hóa Đơn</string>
+    <string name="upload">Tải lên</string>
+    <!-- Strings for BottomNavigationView -->
+    <string name="title_home">Trang Chủ</string>
+    <string name="title_scan">Quét</string>
+    <string name="title_expenses">Chi Phí</string>
+    <string name="title_account">Tài Khoản</string>
+    <string name="receipt_photo">Ảnh hóa đơn</string>
+    <string name="store_name">Tên cửa hàng</string>
+    <string name="total_amount">Tổng số tiền</string>
+    <string name="receipt_date">Ngày hóa đơn</string>
+    <string name="search_receipts_by_name">Nhập tên cửa hàng</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Xin chào khối trống</string>
+    <string name="date_of_receipt">Ngày hóa đơn</string>
+    <string name="edit">Chỉnh sửa</string>
+    <string name="delete">Xóa</string>
+    <string name="actions">Hành động</string>
+    <string name="save">Lưu</string>
+    <string name="total_amount_label">Tổng Số Tiền: $</string>
+    <string name="year">Năm: </string>
+    <string name="report">Báo cáo</string>
+    <string name="month">Tháng:</string>
+    <!-- Other string resources -->
+    <string-array name="language_options">
+        <item>Tiếng Anh</item>
+        <item>Tiếng Việt</item>
+        <item>Tiếng Tây Ban Nha</item>
+        <!-- Add more language options as needed -->
+    </string-array>
+</resources>

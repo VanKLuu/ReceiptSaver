@@ -55,7 +55,6 @@ class DashboardFragment : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                // Handle text changes here if needed
                 return true
             }
         })

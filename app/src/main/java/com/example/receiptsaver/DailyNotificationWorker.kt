@@ -28,6 +28,7 @@ class DailyNotificationWorker(context: Context, workerParams: WorkerParameters) 
 
     override fun doWork(): Result {
         dbRepo = MyDatabaseRepository.getInstance(applicationContext)
+
         // Fetch total amount for the current day from the database
         val totalAmount = fetchTotalAmountForToday()
 
@@ -35,9 +36,6 @@ class DailyNotificationWorker(context: Context, workerParams: WorkerParameters) 
         if (totalAmount >= THRESHOLD_AMOUNT) {
             // Create and send notification
             sendNotification(totalAmount)
-        } else {
-            // Open notification settings if conditions are not met
-            openNotificationSettings(applicationContext)
         }
 
         return Result.success()
@@ -60,7 +58,7 @@ class DailyNotificationWorker(context: Context, workerParams: WorkerParameters) 
     }
 
     private fun sendNotification(totalAmount: Double) {
-        // Create a notification channel
+
         createNotificationChannel()
 
         // Build the notification
@@ -71,12 +69,10 @@ class DailyNotificationWorker(context: Context, workerParams: WorkerParameters) 
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
 
-        // Show the notification
         val notificationManager = NotificationManagerCompat.from(applicationContext)
         try {
             notificationManager.notify(NOTIFICATION_ID, notification)
         } catch (e: SecurityException) {
-            // Handle the SecurityException here
             e.printStackTrace()
         }
     }
@@ -110,6 +106,23 @@ class DailyNotificationWorker(context: Context, workerParams: WorkerParameters) 
             } else {
                 true
             }
+        }
+
+        fun openNotificationSettings(context: Context) {
+            val intent = Intent().apply {
+                action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        }
+    }
+    override fun onStopped() {
+        super.onStopped()
+
+        // Check if notification policy access is granted
+        if (!isNotificationPolicyAccessGranted(applicationContext)) {
+            openNotificationSettings(applicationContext)
         }
     }
 }

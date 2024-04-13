@@ -12,6 +12,7 @@ import android.widget.Button
 import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.TextView
+import androidx.lifecycle.ViewModelProvider
 import com.example.receiptsaver.db.MyDatabaseRepository
 import com.github.chrisbanes.photoview.PhotoView
 import com.github.chrisbanes.photoview.PhotoViewAttacher
@@ -29,6 +30,8 @@ class ReceiptUpdateFragment : Fragment() , DatePickerDialog.OnDateSetListener{
     private lateinit var receiptId: String
     private lateinit var dbRepo: MyDatabaseRepository
     private lateinit var photoViewAttacher: PhotoViewAttacher
+    private lateinit var viewModel: ReceiptUpdateViewModel
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,9 +58,16 @@ class ReceiptUpdateFragment : Fragment() , DatePickerDialog.OnDateSetListener{
             val amount = totalAmount.text.toString().toDoubleOrNull() ?: 0.0
             saveReceiptChanges(name, date, amount, receiptId)
         }
+        setupViewModel()
         loadReceiptFromDatabase()
         return view
     }
+
+    private fun setupViewModel() {
+        val viewModelFactory = ReceiptUpdateViewModelFactory(dbRepo)
+        viewModel = ViewModelProvider(this, viewModelFactory).get(ReceiptUpdateViewModel::class.java)
+    }
+
     private fun showDatePickerDialog() {
         val calendar = Calendar.getInstance()
         val year = calendar.get(Calendar.YEAR)
@@ -78,15 +88,10 @@ class ReceiptUpdateFragment : Fragment() , DatePickerDialog.OnDateSetListener{
         receiptDate.text = formattedDate
     }
     private fun saveReceiptChanges(name: String, date: String, totalAmount: Double, receiptId: String) {
-        try {
-            // Update the receipt in the database
-            dbRepo.updateReceipt(name, date, totalAmount, receiptId)
-            Log.d(TAG, "Receipt changes saved: ID=$receiptId, Name=$name, Date=$date, TotalAmount=$totalAmount")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error saving receipt changes: $e")
-        }
+        viewModel.updateReceipt(name, date, totalAmount, receiptId)
         navigateToReceiptDetail(receiptId)
     }
+
 
     private fun navigateToReceiptDetail(receiptId: String)
     {
@@ -102,9 +107,8 @@ class ReceiptUpdateFragment : Fragment() , DatePickerDialog.OnDateSetListener{
     }
 
     private fun loadReceiptFromDatabase() {
-        dbRepo.fetchReceiptByID(receiptId).observe(viewLifecycleOwner)  { receipt ->
+        viewModel.fetchReceiptById(receiptId).observe(viewLifecycleOwner) { receipt ->
             if (receipt != null) {
-                // Bind receipt information to views
                 storeName.setText(receipt.name ?: "")
                 receiptDate.text = receipt.date
                 totalAmount.setText(receipt.totalAmount.toString())

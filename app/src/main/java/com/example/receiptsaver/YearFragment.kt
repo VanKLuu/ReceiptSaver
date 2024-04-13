@@ -77,8 +77,12 @@ class YearFragment : Fragment() {
 
     private fun fetchTotalAmountFromDatabase(year: String) {
         dbRepo.fetchTotalAmountOfYear(year).observe(viewLifecycleOwner) { totalAmount ->
-            val formattedTotalAmount = currencyFormat.format(totalAmount)
-            totalAmountTextView.text = "Total Amount: $formattedTotalAmount"
+            if (totalAmount != null) {
+                val formattedTotalAmount = currencyFormat.format(totalAmount)
+                totalAmountTextView.text = "Total Amount: $formattedTotalAmount"
+            }
+            else
+                totalAmountTextView.text = "Total Amount: $0.0"
         }
     }
 

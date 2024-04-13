@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity() {
         val dailyWorkRequest =
             OneTimeWorkRequestBuilder<DailyNotificationWorker>()
                 .setConstraints(constraints)
+                .addTag(DailyNotificationWorker::class.java.name)
                 .build()
 
         WorkManager.getInstance(applicationContext).enqueue(dailyWorkRequest)

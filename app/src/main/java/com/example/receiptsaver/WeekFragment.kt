@@ -52,8 +52,12 @@ class WeekFragment : Fragment() {
 
     private fun fetchTotalAmountFromDatabase(startOfWeek: String, endOfWeek: String) {
         dbRepo.fetchTotalAmount(startOfWeek, endOfWeek).observe(viewLifecycleOwner) { totalAmount ->
-            val formattedTotalAmount = currencyFormat.format(totalAmount)
-            totalAmountTextView.text = "Total Amount: $formattedTotalAmount"
+            if (totalAmount != null) {
+                val formattedTotalAmount = currencyFormat.format(totalAmount)
+                totalAmountTextView.text = "Total Amount: $formattedTotalAmount"
+            }
+            else
+                totalAmountTextView.text = "Total Amount: $0.0"
         }
     }
 

@@ -81,34 +81,28 @@ class MonthFragment : Fragment() {
         val abbreviatedWeeks = arrayOf("Week 1", "Week 2", "Week 3", "Week 4")
         // Create a map to store expenditure data for each month
         val expenditureMap = abbreviatedWeeks.associateWith { 0.0 }.toMutableMap()
-
         // Populate the map with available data
         weeklyExpenditureData.forEach { (week, expenditure) ->
             week?.toIntOrNull()?.let { weekIndex ->
                 val weekAbbreviation = abbreviatedWeeks.getOrNull(weekIndex - 1)
                 weekAbbreviation?.let {
                     expenditureMap[it] = expenditure
-                    Log.d("ExpensesFragment", "Assigned value $expenditure to month $weekAbbreviation")
                 }
             }
         }
-
         // Create a list of BarEntry objects for each week
         val barEntries = abbreviatedWeeks.indices.map { index ->
             val month = abbreviatedWeeks[index]
             val expenditure = expenditureMap[month] ?: 0.0
             BarEntry(index.toFloat(), expenditure.toFloat())
         }
-
         // Set custom labels for the x-axis
         val labels = abbreviatedWeeks.toList()
         weeklyExpenditureChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
         weeklyExpenditureChart.xAxis.labelCount = labels.size
-
         // Create a BarDataSet and set its data
         val barDataSet = BarDataSet(barEntries, "Weekly Expenditure")
         val data = BarData(barDataSet)
-
         // Apply data to the chart and refresh it
         weeklyExpenditureChart.data = data
         weeklyExpenditureChart.invalidate()

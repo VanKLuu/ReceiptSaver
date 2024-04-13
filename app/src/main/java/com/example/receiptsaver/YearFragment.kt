@@ -43,9 +43,7 @@ class YearFragment : Fragment() {
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 spinner.adapter = adapter
             } else {
-                // Handle case when distinctYears is null or empty
                 Log.e("ExpensesFragment", "Distinct years list is null or empty")
-                // Set default value to the current year
                 val currentYear = Calendar.getInstance().get(Calendar.YEAR).toString()
                 val defaultAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listOf(currentYear))
                 defaultAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -100,13 +98,8 @@ class YearFragment : Fragment() {
             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         )
-
         // Create a map to store expenditure data for each month
         val expenditureMap = abbreviatedMonths.associateWith { 0.0 }.toMutableMap()
-
-        // Log the initial map
-        Log.d("ExpensesFragment", "Initial expenditure map: $expenditureMap")
-
         // Populate the map with available data
         monthlyExpenditureData.forEach { (month, expenditure) ->
             month?.toIntOrNull()?.let { monthIndex ->
@@ -117,29 +110,19 @@ class YearFragment : Fragment() {
                 }
             }
         }
-
-        // Log the final map
-        Log.d("ExpensesFragment", "Populated expenditure map: $expenditureMap")
-
         // Create a list of BarEntry objects for each month
         val barEntries = abbreviatedMonths.indices.map { index ->
             val month = abbreviatedMonths[index]
             val expenditure = expenditureMap[month] ?: 0.0
             BarEntry(index.toFloat(), expenditure.toFloat())
         }
-
-        // Log the bar entries
-        Log.d("ExpensesFragment", "Bar entries: $barEntries")
-
         // Set custom labels for the x-axis
         val labels = abbreviatedMonths.toList()
         monthlyExpenditureChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
         monthlyExpenditureChart.xAxis.labelCount = labels.size
-
         // Create a BarDataSet and set its data
         val barDataSet = BarDataSet(barEntries, "Monthly Expenditure")
         val data = BarData(barDataSet)
-
         // Apply data to the chart and refresh it
         monthlyExpenditureChart.data = data
         monthlyExpenditureChart.invalidate()

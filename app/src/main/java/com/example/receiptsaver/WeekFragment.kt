@@ -83,25 +83,20 @@ class WeekFragment : Fragment() {
                 Log.d("ExpensesFragment", "Assigned value $expenditure to day $dayOfWeek")
             }
         }
-
         // Define an array of abbreviated day names
         val abbreviatedDayOfWeeks = arrayOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
-
         // Create a list of BarEntry objects for each day of the week
         val barEntries = abbreviatedDayOfWeeks.mapIndexed { index, dayOfWeek ->
             val expenditure = expenditureMap[dayOfWeek] ?: 0.0
             BarEntry(index.toFloat(), expenditure.toFloat())
         }
-
         // Set custom labels for the x-axis
         val labels = abbreviatedDayOfWeeks.toList()
         dailyExpenditureChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
         dailyExpenditureChart.xAxis.labelCount = labels.size
-
         // Create a BarDataSet and set its data
         val barDataSet = BarDataSet(barEntries, "Daily Expenditure")
         val data = BarData(barDataSet)
-
         // Apply data to the chart and refresh it
         dailyExpenditureChart.data = data
         dailyExpenditureChart.invalidate()

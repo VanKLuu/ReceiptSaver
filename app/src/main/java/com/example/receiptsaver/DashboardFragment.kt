@@ -1,4 +1,6 @@
 package com.example.receiptsaver
+import android.app.Activity
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
@@ -14,9 +16,11 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.receiptsaver.db.MyDatabaseRepository
 import com.example.receiptsaver.db.Receipts
+import com.example.receiptsaver.MainActivity
 import java.text.NumberFormat
 
 private const val LOG_TAG = "DashboardFragment"
+private const val REQUEST_IMAGE_SELECTION = 100
 
 class DashboardFragment : Fragment() {
 
@@ -39,6 +43,7 @@ class DashboardFragment : Fragment() {
         adapter = ReceiptAdapter(emptyList())
         receiptRecyclerView.adapter = adapter
         receiptRecyclerView.layoutManager = GridLayoutManager(context, 1)
+
         return view
     }
 
@@ -58,7 +63,33 @@ class DashboardFragment : Fragment() {
                 return true
             }
         })
+        uploadButton.setOnClickListener {
+            openImagePicker()
+        }
     }
+
+    private fun openImagePicker() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "image/*"
+        startActivityForResult(intent, REQUEST_IMAGE_SELECTION)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_IMAGE_SELECTION && resultCode == Activity.RESULT_OK) {
+            data?.data?.let { uri ->
+                try {
+                    val inputStream = requireContext().contentResolver.openInputStream(uri)
+                    val imageBitmap = BitmapFactory.decodeStream(inputStream)
+                    inputStream?.close()
+                    imageBitmap?.let { (activity as MainActivity).performOCR(it) }
+                } catch (e: Exception) {
+                    Log.e(LOG_TAG, "Error reading image file", e)
+                }
+            }
+        }
+    }
+
     private fun navigateToSearchFragment(query: String) {
         val fragmentTransaction = parentFragmentManager.beginTransaction()
         val searchFragment = SearchFragment.newInstance(query)
@@ -137,42 +168,5 @@ class DashboardFragment : Fragment() {
             return DashboardFragment()
         }
     }
-
-    //
-//    private fun openPdfPicker() {
-//        val intent = Intent(Intent.ACTION_GET_CONTENT)
-//        intent.type = "application/pdf"
-//        startActivityForResult(intent, REQUEST_PDF_SELECTION)
-//    }
-//
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//        if (requestCode == REQUEST_PDF_SELECTION && resultCode == Activity.RESULT_OK) {
-//            data?.data?.let { uri ->
-//                try {
-//                    val inputStream: InputStream? =
-//                        requireContext().contentResolver.openInputStream(uri)
-//                    val pdfByteArray = inputStream?.readBytes()
-//                    inputStream?.close()
-//                    pdfByteArray?.let { savePdfToDatabase(it) }
-//                } catch (e: Exception) {
-//                    Log.e(LOG_TAG, "Error reading PDF file", e)
-//                }
-//            }
-//        }
-//    }
-//
-//    private fun savePdfToDatabase(pdfByteArray: ByteArray) {
-//        Executors.newSingleThreadExecutor().execute {
-//            val receipt = Receipts(
-//                id = UUID.randomUUID(),
-//                name = "PDF Receipt",
-//                date = "2024-02-29",
-//                totalAmount = 0.0,
-//                image = pdfByteArray
-//            )
-//            dbRepo.addReceipt(receipt)
-//        }
-//    }
 }
 

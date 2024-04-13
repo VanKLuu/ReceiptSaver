@@ -36,21 +36,15 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 
-
-private const val REQUEST_IMAGE_CAPTURE = 1
-private var currentPhotoPath: String? = null
-
 class MainActivity : AppCompatActivity() {
 
     private lateinit var dbRepo: MyDatabaseRepository
     private lateinit var textRecognizer: TextRecognizer
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize text recognizer and download the model if needed
         textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         dbRepo = MyDatabaseRepository.getInstance(applicationContext)
         setupBottomNavigationView()
@@ -138,7 +132,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun openCamera() {
         val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         val photoFile: File? = try {
@@ -192,7 +185,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun performOCR(bitmap: Bitmap) {
+    fun performOCR(bitmap: Bitmap) {
         // Check if the text recognizer is initialized
         if (!::textRecognizer.isInitialized) {
             Log.e(TAG, "Text recognizer is not initialized")
@@ -225,7 +218,6 @@ class MainActivity : AppCompatActivity() {
                 val currentDate = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(Date())
 
                 // Create a Receipts object with the extracted information
-                // Generate a unique ID for the receipt
                 val receiptId = UUID.randomUUID()
                 val receipts = Receipts(
                     id = receiptId,
@@ -235,11 +227,7 @@ class MainActivity : AppCompatActivity() {
                     image = imageByteArray,  // Set the photo data
                     thumbnail = thumbnailByteArray  // Set the thumbnail photo data
                 )
-
-                // Save the receipt to the database
                 saveReceipt(receipts)
-
-                // Navigate to the dashboard screen
                 navigateToDetail(receiptId.toString())
             }
             .addOnFailureListener { e ->
@@ -321,6 +309,8 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "MainActivity"
         private const val REQUEST_CAMERA_PERMISSION = 101
+        private const val REQUEST_IMAGE_CAPTURE = 1
+        private var currentPhotoPath: String? = null
     }
 
 }

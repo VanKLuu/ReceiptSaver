@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
@@ -24,16 +25,25 @@ import java.util.*
 class DailyNotificationWorker(context: Context, workerParams: WorkerParameters) :
     Worker(context, workerParams) {
     private lateinit var dbRepo: MyDatabaseRepository
+    private lateinit var sharedPreferences: SharedPreferences
 
 
     override fun doWork(): Result {
         dbRepo = MyDatabaseRepository.getInstance(applicationContext)
+        sharedPreferences = applicationContext.getSharedPreferences("Settings", Context.MODE_PRIVATE)
 
         // Fetch total amount for the current day from the database
         val totalAmount = fetchTotalAmountForToday()
 
+        // Load the saved threshold amount from SharedPreferences
+        val thresholdAmount = sharedPreferences.getString("thresholdAmount", "0.0")?.toDouble() ?: 0.0
+
+        // Exit if thresholdAmount is 0 or not set
+        if (thresholdAmount <= 0.0) {
+            return Result.success()
+        }
         // Check if the total amount meets the notification criteria
-        if (totalAmount >= THRESHOLD_AMOUNT) {
+        if (totalAmount >= thresholdAmount) {
             // Create and send notification
             sendNotification(totalAmount)
         }
@@ -97,7 +107,6 @@ class DailyNotificationWorker(context: Context, workerParams: WorkerParameters) 
     companion object {
         private const val CHANNEL_ID = "daily_notification_channel"
         private const val NOTIFICATION_ID = 123
-        private const val THRESHOLD_AMOUNT = 100.0
 
         fun isNotificationPolicyAccessGranted(context: Context): Boolean {
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

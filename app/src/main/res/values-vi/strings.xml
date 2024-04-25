@@ -30,11 +30,13 @@
     <string name="year">Năm: </string>
     <string name="report">Báo cáo</string>
     <string name="month">Tháng:</string>
-    <!-- Other string resources -->
-    <string-array name="language_options">
-        <item>Tiếng Anh</item>
-        <item>Tiếng Việt</item>
-        <item>Tiếng Tây Ban Nha</item>
-        <!-- Add more language options as needed -->
-    </string-array>
+    <string name="language">Ngôn ngữ</string>
+    <string name="dark_mode">Chế độ tối</string>
+    <string name="select_language">Chọn ngôn ngữ</string>
+    <string name="vietnamese">Tiếng Việt</string>
+    <string name="english">English</string>
+    <string name="spanish">Española</string>
+    <string name="daily_threshold_amount">Giới hạn số tiền hàng ngày</string>
+    <string name="_0_0">0.0</string>
+    <string name="invalid_amount">Số tiền không hơp lệ</string>
 </resources>

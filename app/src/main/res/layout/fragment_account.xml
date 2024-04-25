@@ -1,4 +1,6 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -7,114 +9,96 @@
         android:id="@+id/text_dark_mode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Dark Mode"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="24dp"
+        android:text="@string/dark_mode"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Dark Mode Switch -->
     <Switch
         android:id="@+id/switch_theme"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
         android:checked="false"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp" />
+        android:minWidth="48dp"
+        android:minHeight="48dp"
+        app:layout_constraintStart_toEndOf="@+id/text_dark_mode"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
 
-    <!-- Language Text -->
+    <!-- Select language -->
     <TextView
-        android:id="@+id/text_language"
+        android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Language"
-        android:layout_alignParentStart="true"
-        android:layout_below="@id/text_dark_mode"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"/>
-
-    <!-- Language Spinner -->
-    <Spinner
-        android:id="@+id/spinner_language"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/switch_theme"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp" />
-
-    <!-- About Text -->
-    <TextView
-        android:id="@+id/text_about"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="About"
-        android:layout_below="@id/spinner_language"
         android:layout_marginTop="32dp"
+        android:text="@string/select_language"
         android:textSize="20sp"
-        android:textColor="@color/colorPrimary"
-        android:layout_centerHorizontal="true"/>
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_dark_mode" />
 
-    <!-- About Content -->
-    <TextView
-        android:id="@+id/content_about"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/text_about"
-        android:layout_marginTop="16dp"
-        android:text="This Receipt Saver app..."
-        android:textSize="16sp"
-        android:textColor="@color/black"
-        android:layout_centerHorizontal="true"/>
-
-    <!-- Feedback Text -->
-    <TextView
-        android:id="@+id/text_feedback"
+    <RadioGroup
+        android:id="@+id/radioGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Feedback"
-        android:layout_below="@id/content_about"
-        android:layout_marginTop="32dp"
-        android:textSize="20sp"
-        android:textColor="@color/colorPrimary"
-        android:layout_centerHorizontal="true"/>
-
-    <!-- Feedback Content -->
-    <TextView
-        android:id="@+id/content_feedback"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/text_feedback"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="For feedback please contact..."
-        android:textSize="16sp"
-        android:textColor="@color/black"
-        android:layout_centerHorizontal="true"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView5">
 
-    <!-- Privacy Policy Text -->
+        <RadioButton
+            android:id="@+id/english_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:checked="true"
+            android:text="@string/english" />
+
+        <RadioButton
+            android:id="@+id/spanish_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/spanish" />
+
+        <RadioButton
+            android:id="@+id/vietnamese_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/vietnamese" />
+    </RadioGroup>
+    <!-- Dark Mode Text -->
     <TextView
-        android:id="@+id/text_privacy_policy"
+        android:id="@+id/text_threshold_amount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Privacy Policy"
-        android:layout_below="@id/content_feedback"
-        android:layout_marginTop="32dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/daily_threshold_amount"
         android:textSize="20sp"
-        android:textColor="@color/colorPrimary"
-        android:layout_centerHorizontal="true"/>
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
 
-    <!-- Privacy Policy Content -->
-    <TextView
-        android:id="@+id/content_privacy_policy"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/text_privacy_policy"
+    <EditText
+        android:id="@+id/threshold_amount"
+        android:layout_width="100dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="Your privacy policy..."
-        android:textSize="16sp"
-        android:textColor="@color/black"
-        android:layout_centerHorizontal="true"/>
+        android:ems="10"
+        android:hint="@string/_0_0"
+        android:inputType="numberDecimal"
+        android:textSize="20sp"
+        app:layout_constraintStart_toEndOf="@+id/text_threshold_amount"
+        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

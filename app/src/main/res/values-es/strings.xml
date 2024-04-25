@@ -30,11 +30,13 @@
     <string name="year">Año: </string>
     <string name="report">Informe</string>
     <string name="month">Mes:</string>
-    <!-- Other string resources -->
-    <string-array name="language_options">
-        <item>Inglés</item>
-        <item>Vietnamita</item>
-        <item>Español</item>
-        <!-- Add more language options as needed -->
-    </string-array>
+    <string name="language">Idioma</string>
+    <string name="dark_mode">Modo oscuro</string>
+    <string name="select_language">Seleccione el idioma</string>
+    <string name="vietnamese">Tiếng Việt</string>
+    <string name="english">English</string>
+    <string name="spanish">Española</string>
+    <string name="daily_threshold_amount">Monto umbral diario</string>
+    <string name="_0_0">0.0</string>
+    <string name="invalid_amount">Entradas no válidas</string>
 </resources>

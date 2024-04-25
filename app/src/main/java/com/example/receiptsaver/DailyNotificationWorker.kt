@@ -97,7 +97,7 @@ class DailyNotificationWorker(context: Context, workerParams: WorkerParameters) 
     companion object {
         private const val CHANNEL_ID = "daily_notification_channel"
         private const val NOTIFICATION_ID = 123
-        private const val THRESHOLD_AMOUNT = 100.0 // Example threshold amount
+        private const val THRESHOLD_AMOUNT = 100.0
 
         fun isNotificationPolicyAccessGranted(context: Context): Boolean {
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

@@ -1,9 +1,10 @@
 package com.example.receiptsaver
 
+import android.util.Log
 import com.google.mlkit.vision.text.Text
 import java.text.SimpleDateFormat
 import java.util.Locale
-
+private const val TAG = "TextRecognitionHandler"
 object TextRecognitionHandler {
     fun getWellFormattedText(blocks: List<Text.TextBlock>): String {
         val textElements = mutableListOf<Text.Element>()
@@ -79,14 +80,13 @@ object TextRecognitionHandler {
             val trimmedLine = line.trim()
             val extractedDate = extractDateFromLine(trimmedLine)
             when {
-                extractedDate != null -> {
+                date == null && extractedDate != null -> {
                     date = formatDate(extractedDate)
                 }
                 storeName == null -> storeName = trimmedLine
-                isTotalAmount(trimmedLine) -> totalAmount = extractTotalAmount(trimmedLine)
+                totalAmount == null && isTotalAmount(trimmedLine) -> totalAmount = extractTotalAmount(trimmedLine)
             }
         }
-
         return Triple(storeName, date, totalAmount)
     }
 
@@ -138,6 +138,7 @@ object TextRecognitionHandler {
 
             // Extract the substring after the keyword
             val substring = text.substring(keywordIndex + keyword.length).trim()
+            Log.d(TAG, "Substring: $substring")
 
             // Use regular expressions to extract the numerical value
             val amountRegex = """\d+(\.\d+)?""".toRegex()
@@ -149,6 +150,6 @@ object TextRecognitionHandler {
             }
         }
 
-        return null // Return null if no amount is found
+        return null
     }
 }
